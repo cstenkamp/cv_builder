@@ -1,0 +1,909 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>CV {{ firstname }} {{ familyname }}</title>
+        <meta name="description" content="CV of {{ firstname }} {{ familyname }}." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {#    <link rel="icon" href="/favicon.ico" />#}
+    {#    <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png" />#}
+
+        <!-- https://www.promomasters.at/blog/open-graph-meta-tags/ -->
+        <meta property="og:title" content="CV {{ firstname }} {{ familyname }}" />
+        <meta property="og:type" content="profile" />
+        <meta property="og:profile:first_name" content="{{ firstname }}" />
+        <meta property="og:profile:last_name" content="{{ familyname }}" />
+
+    {#    <meta property="og:profile:username" content="shoeffner" />#}
+    {#    <meta property="og:profile:gender" content="male" />#}
+    {#    <meta property="og:url" content="https://sebastian-hoeffner.de/cv/" />#}
+    {#    <meta property="og:image" content="https://sebastian-hoeffner.de/static/images/shoeffner.jpg" />#}
+
+        <link rel="stylesheet" href="{{ hugo_public_path }}/fontawesome/css/all.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700,400italic" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href="./cv.css" />
+
+        <script>
+            function formatDate(input) {
+              var date;
+              if (typeof input === 'string') {
+                var parts = input.split('/');
+                if (parts.length === 2) { // "MM/YYYY" format, convert it to a Date object
+                  date = new Date(parseInt(parts[1]), parseInt(parts[0]) - 1, 1);
+                } else if (parts.length === 1) { // only year, just use that
+                  return parts[0];
+                } else {
+                  console.error("Invalid input format");
+                  return;
+                }
+              } else if (input instanceof Date) {
+                date = input;
+              } else {
+                console.error("Invalid input format");
+                return;
+              }
+              var monthNames = [
+                "January", "February", "March",
+                "April", "May", "June", "July",
+                "August", "September", "October",
+                "November", "December"
+              ];
+
+              var monthIndex = date.getMonth();
+              var year = date.getFullYear();
+              return ((monthIndex + 1) + "").padStart(2,"0") + '/' + year;
+              // return year + '-' + (monthIndex + 1) + '-' + date.getDate(); // monthNames[monthIndex] + ' ' + year;
+            }
+
+            function formatdates() {
+                var elems = document.getElementsByTagName("time");
+                for (var i = 0; i < elems.length; i ++) {
+                    elems[i].innerHTML = formatDate(elems[i].dateTime);
+                }
+            }
+        </script>
+
+    </head>
+
+    <body onload="formatdates();">
+{#        <div id="backlink" class="hideonprint">#}
+{#            <a href="{{ homepage_link }}">back to {{ homepage }}</a>#}
+{#        </div>#}
+
+        <div id="resume">
+                <header id="header">
+                    <img src="{{ image_link }}" alt="{{ firstname }} {{ familyname }}" />
+                    <div class="middle">
+                        <h1 class="name">{{ firstname }} {{ familyname }}</h1>
+                        <h2 class="label">{{ label }}</h2>
+                    </div>
+                </header>
+
+                <section id="basics">
+
+                        <div id="location">
+                            <span class="fa fa-map-marked-alt"></span>
+                            <span class="city">
+                                {{ location }}
+                            </span>
+                            <span class="countryCode">
+                                (DE)
+                            </span>
+                        </div>
+
+                    <div id="contact">
+                        <div class="website">
+                            <span class="fa fa-link"></span>
+                            <a href=" {{ homepage_link }}">{{ homepage }}</a>
+                        </div>
+                        <div class="email">
+                            <span class="fa fa-envelope"></span>
+                            <a href="mailto:{{ email }}">{{ email }}</a>
+                        </div>
+                    </div>
+
+                    <div id="profiles">
+                        <div class="item">
+                            <a href="https://github.com/{{ github_user }}">
+                                <span class="network fab fa-github github"></span></a>
+                            <span class="username">
+                                <span class="url">
+                                    <a href="https://github.com/{{ github_user }}">{{ github_user }}</a>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="item">
+                            <a href="https://www.linkedin.com/in/{{ linkedin_user }}/">
+                                <span class="network fab fa-linkedin linkedin"></span></a>
+                            <span class="username">
+                                <span class="url">
+                                    <a href="https://www.linkedin.com/in/{{ linkedin_user }}/">{{ firstname }} {{ familyname }}</a>
+                                </span>
+                            </span>
+                        </div>
+                        <!--
+{#                        <div class="item">#}
+{#                            <a href="https://stackoverflow.com/users/{{ so_user }}">#}
+{#                                <span class="network fab fa-stack-overflow stack-overflow"></span></a>#}
+{#                            <span class="username">#}
+{#                                <span class="url">#}
+{#                                    <a href="https://stackoverflow.com/users/{{ so_user }}">{{ firstname }} {{ familyname }}</a>#}
+{#                                </span>#}
+{#                            </span>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <a href="https://orcid.org/{{ orcid_id }}">#}
+{#                                <span class="network fab fa-orcid orcid"></span></a>#}
+{#                            <span class="username">#}
+{#                                <span class="url">#}
+{#                                    <a href="https://orcid.org/{{ orcid_id }}">{{ orcid_id }}</a>#}
+{#                                </span>#}
+{#                            </span>#}
+{#                        </div>#}
+                    -->
+                    </div>
+
+                </section>
+
+                <section class="section main-summary">
+                    <h2 class="section-title">About</h2>
+                    <section>
+                        <p lang="en">{{ about_text }}</p>
+                    </section>
+                </section>
+
+                {% for section in sections %}
+                    <section class="section">
+                        <h2 class="section-title">{{ section.title }}</h2>
+                        <section id="{{ section.sectionkey }}">
+
+                            {% if section.content.chronog %}
+                                {% for exp in section.content.chronog %}
+                                    <header>
+                                        <h3 class="name">
+                                            {{ exp.employer }}{% if exp.place %}, <span style="font-size:14px">{{ exp.place }}</span> {% endif %}
+                                        </h3>
+                                        <div class="date">
+                                            {% set dates = exp.years.split(' -- ') %}
+                                            {% if dates|length > 1 %}
+                                                <time datetime="{{ dates[0] }}" class="startDate">
+                                                    {{ dates[0] }}
+                                                </time>
+                                                –
+                                                <time datetime="{{ dates[1] }}" class="endDate">
+                                                    {{ dates[1] }}
+                                                </time>
+                                            {% else %}
+                                                {{ dates[0] }}
+                                            {% endif %}
+                                        </div>
+                                    </header>
+                                    <div class="item">
+                                        <div class="position">
+                                            {{ exp.title }}
+                                        </div>
+                                        {% if exp.optshort | regex_search('\[(.*?)\]') is none %}
+                                            <div class="summary">
+                                                <p>{{ exp.optshort }}</p>
+                                            </div>
+                                            <ul class="highlights">
+                                                {{ exp.optlong }}
+                                            </ul>
+                                        {% else %}
+                                            <div class="website">
+                                                <a href="{{ exp.optshort | regex_search('\[(.*?)\]') }}">{{ exp.optshort | regex_search('\((.*?)\)') }}</a>
+                                            </div>
+                                            <div class="summary">
+                                                <p>{{ exp.optlong }}</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+
+                            {% elif section.content.basic %}
+
+                                {% for key,val in section.content.basic.items() %}
+                                    <div class="item">
+                                        <div>
+                                            {{ key }}
+                                        </div>
+                                        <div style="font-style: italic;">
+                                            {{ val }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+
+                            {% elif section.content.lst %}
+
+                                <ul>
+                                {% for val in section.content.lst %}
+                                    <li class=noinline>
+                                        {{ val }}
+                                    </li>
+                                {% endfor %}
+                                </ul>
+
+                            {% endif %}
+                        </section>
+                    </section>
+                {% endfor %}
+
+                <!--
+{#                <!--#}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Experience</h2>#}
+{#                    <section id="work">#}
+{#                        {% for exp in experience %}#}
+{#                            <header>#}
+{#                                <h3 class="name">#}
+{#                                    {{ exp.employer }}{% if exp.place %}, {{ exp.place }} {% endif %}#}
+{#                                </h3>#}
+{#                                <div class="date">#}
+{#                                    {% set dates = exp.years.split(' -- ') %}#}
+{#                                    {% if dates|length > 1 %}#}
+{#                                        <time datetime="{{ dates[0] }}" class="startDate">#}
+{#                                            {{ dates[0] }}#}
+{#                                        </time>#}
+{#                                        –#}
+{#                                        <time datetime="{{ dates[1] }}" class="endDate">#}
+{#                                            {{ dates[1] }}#}
+{#                                        </time>#}
+{#                                    {% else %}#}
+{#                                        {{ dates[0] }}#}
+{#                                    {% endif %}#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                <div class="position">#}
+{#                                    {{ exp.title }}#}
+{#                                </div>#}
+{#                                <div class="website">#}
+{#                                    <a href="{{ exp.optshort | regex_search('\[(.*?)\]') }}">{{ exp.optshort | regex_search('\((.*?)\)') }}</a>#}
+{#                                </div>#}
+{#                                <div class="summary">#}
+{#                                    <p>{{ exp.optlong }}</p>#}
+{#                                </div>#}
+{#                                <ul class="highlights">#}
+{#                                    <li>Member of the collaborative research center “EASE”.</li>#}
+{#                                </ul>#}
+{#                            </div>#}
+{#                        {% endfor %}#}
+{#                        <!--#}
+{#                        <header>#}
+{#                            <h3 class="name">#}
+{#                                University of Bremen#}
+{#                            </h3>#}
+{#                            <div class="date">#}
+{#                                <time datetime="2018-07-01" class="startDate">#}
+{#                                    2018-07-01#}
+{#                                </time>#}
+{#                                –#}
+{#                                <time datetime="2021-12-31" class="endDate">#}
+{#                                    2021-12-31#}
+{#                                </time>#}
+{#                            </div>#}
+{#                        </header>#}
+{#                        <div class="item">#}
+{#                            <div class="position">#}
+{#                                Research Associate#}
+{#                            </div>#}
+{#                            <!--#}
+{#                            <div class="website">#}
+{#                                <a href="https://dm.tzi.de">https://dm.tzi.de</a>#}
+{#                            </div>#}
+{#                            -->#}
+{#                            <div class="summary">#}
+{#                                <p>Embodied simulations for natural language understanding.</p>#}
+{#                            </div>#}
+{#                            <ul class="highlights">#}
+{#                                <li>Member of the collaborative research center “EASE”.</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <header>#}
+{#                            <h3 class="name">#}
+{#                                Osnabrück University#}
+{#                            </h3>#}
+{#                            <div class="date">#}
+{#                                <time datetime="2017-04-15" class="startDate">#}
+{#                                    2017-04-15#}
+{#                                </time>#}
+{#                                –#}
+{#                                <time datetime="2017-07-15" class="endDate">#}
+{#                                    2017-07-15#}
+{#                                </time>#}
+{#                            </div>#}
+{#                        </header>#}
+{#                        <div class="item">#}
+{#                        <div class="position">#}
+{#                            Tutor/Lecturer#}
+{#                        </div>#}
+{#                        <!--#}
+{#                        <div class="website">#}
+{#                            <a href="https://shoeffner.github.io/monty">https://shoeffner.github.io/monty</a>#}
+{#                        </div>#}
+{#                        -->#}
+{#                        <div class="summary">#}
+{#                            <p>Teaching “Basic Programming in Python”</p>#}
+{#                        </div>#}
+{#                        <ul class="highlights">#}
+{#                            <li>Evaluation in many categories in the top 10%.</li>#}
+{#                        </ul>#}
+{#                    </div>#}
+{#                        <header>#}
+{#                            <h3 class="name">#}
+{#                                Osnabrück University#}
+{#                            </h3>#}
+{#                            <div class="date">#}
+{#                                <time datetime="2015-10-15" class="startDate">#}
+{#                                    2015-10-15#}
+{#                                </time>#}
+{#                                –#}
+{#                                <time datetime="2017-04-15" class="endDate">#}
+{#                                    2017-04-15#}
+{#                                </time>#}
+{#                            </div>#}
+{#                        </header>#}
+{#                        <div class="item">#}
+{#                            <div class="position">#}
+{#                                Tutor#}
+{#                            </div>#}
+{#                            <!--#}
+{#                            -->#}
+{#                            <div class="summary">#}
+{#                                <p>Tutor for Machine Learning and Computer Vision.</p>#}
+{#                            </div>#}
+{#                        </div>#}
+{#-->#}
+{#                    </section>#}
+{#                </section>#}
+{#                -->#}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Education</h2>#}
+{#                    <section id="education">#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                    <h3 class="institution">#}
+{#                                        Osnabrück University#}
+{#                                    </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2016-04-18" class="startDate">#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2018-02-01" class="endDate">#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                    <div class="area">#}
+{#                                        Cognitive Science#}
+{#                                    </div>#}
+{#                                    <div class="studyType">#}
+{#                                        Master of Science#}
+{#                                    </div>#}
+{#                                    <div class="gpa">#}
+{#                                        <!--span class="fa fa-graduation-cap"></span-->#}
+{#                                        <span class="gpa"> GPA: 1.1 (with distinction)</span>#}
+{#                                    </div>#}
+{#                                    <ul class="courses">#}
+{#                                        <li>Machine Learning</li>#}
+{#                                        <li>Computational Linguistics</li>#}
+{#                                        <li>Thesis: Gaze Tracking Using Common Webcams</li>#}
+{#                                    </ul>#}
+{#                            </div>#}
+{#                        </div> <!-- unit -->#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                    <h3 class="institution">#}
+{#                                        Osnabrück University#}
+{#                                    </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2014-10-06" class="startDate">#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2016-04-17" class="endDate">#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                    <div class="area">#}
+{#                                        Computer Science#}
+{#                                    </div>#}
+{#                                    <div class="studyType">#}
+{#                                        Master of Science (discontinued)#}
+{#                                    </div>#}
+{#                                    <div class="gpa">#}
+{#                                        <!--span class="fa fa-graduation-cap"></span-->#}
+{#                                        <span class="gpa"> GPA: n/a</span>#}
+{#                                    </div>#}
+{#                                    <ul class="courses">#}
+{#                                        <li>AI &amp; Robotics</li>#}
+{#                                        <li>Uncertainty Treatment in Automation Engineering</li>#}
+{#                                        <li>E-Learning</li>#}
+{#                                    </ul>#}
+{#                            </div>#}
+{#                        </div> <!-- unit -->#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                    <h3 class="institution">#}
+{#                                        Osnabrück University#}
+{#                                    </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2011-10-03" class="startDate">#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2014-11-10" class="endDate">#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                    <div class="area">#}
+{#                                        Cognitive Science#}
+{#                                    </div>#}
+{#                                    <div class="studyType">#}
+{#                                        Bachelor of Science#}
+{#                                    </div>#}
+{#                                    <div class="gpa">#}
+{#                                        <!--span class="fa fa-graduation-cap"></span-->#}
+{#                                        <span class="gpa"> GPA: 1.9</span>#}
+{#                                    </div>#}
+{#                                    <ul class="courses">#}
+{#                                        <li>Computer Graphics</li>#}
+{#                                        <li>Computer Vision</li>#}
+{#                                        <li>Thesis: Probabilistic Robot Localization in Continuous 3D Maps</li>#}
+{#                                    </ul>#}
+{#                            </div>#}
+{#                        </div> <!-- unit -->#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                    <h3 class="institution">#}
+{#                                        Orta Doğu Teknik Üniversitesi#}
+{#                                    </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2013-09-16" class="startDate">#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2014-01-17" class="endDate">#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                    <div class="area">#}
+{#                                        Computer Engineering#}
+{#                                    </div>#}
+{#                                    <div class="studyType">#}
+{#                                        Erasmus Exchange#}
+{#                                    </div>#}
+{#                                    <div class="gpa">#}
+{#                                        <!--span class="fa fa-graduation-cap"></span-->#}
+{#                                        <span class="gpa"> GPA: 1.25 (converted)</span>#}
+{#                                    </div>#}
+{#                                    <ul class="courses">#}
+{#                                        <li>Computer Animation</li>#}
+{#                                        <li>Robot Motion Planning and Control</li>#}
+{#                                        <li>Database Management Systems</li>#}
+{#                                    </ul>#}
+{#                            </div>#}
+{#                        </div> <!-- unit -->#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                    <h3 class="institution">#}
+{#                                        Städtisches Gymnasium Sundern#}
+{#                                    </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2002-08-15" class="startDate">#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2011-07-01" class="endDate">#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                    <div class="area">#}
+{#                                        Allgemeine Hochschulreife (Abitur)#}
+{#                                    </div>#}
+{#                                    <div class="studyType">#}
+{#                                        High School#}
+{#                                    </div>#}
+{#                                    <div class="gpa">#}
+{#                                        <!--span class="fa fa-graduation-cap"></span-->#}
+{#                                        <span class="gpa"> GPA: 1.8</span>#}
+{#                                    </div>#}
+{#                                    <ul class="courses">#}
+{#                                        <li>Mathematics</li>#}
+{#                                        <li>Chemistry</li>#}
+{#                                    </ul>#}
+{#                            </div>#}
+{#                        </div> <!-- unit -->#}
+{#                    </section>#}
+{#                </section>#}
+{##}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Publications</h2>#}
+{#                    <section id="publications">#}
+{#                            <div class="item">#}
+{#                                    <span class="author">D. Beßler</span>, <span class="author">R. Porzel</span>, <span class="author">M. Pomarlan</span>, <span class="author">A. Vyas</span>, <span class="author">S. Höffner</span>, <span class="author">M. Beetz</span>, <span class="author">R. Malaka</span>, <span class="author">J. Bateman</span>:#}
+{#                                <span class="name">#}
+{#                                        Foundations of the Socio-physical Model of Activities (SOMA) for Autonomous Robotic Agents.#}
+{#                                </span>#}
+{#                                    <span class="publisher">#}
+{#                                        FOIS 2021#}
+{#                                    </span>#}
+{#                                <time datetime="2021-08-31" class="date">#}
+{#                                        2021-08-31#}
+{#                                    </time>#}
+{#                                    <div class="doi hideonprint">#}
+{#                                        <p><a href="https://fois2021.inf.unibz.it/wp-content/uploads/2021/08/paper_13.pdf">https://fois2021.inf.unibz.it/wp-content/uploads/2021/08/paper_13.pdf</a></p>#}
+{#                                    </div>#}
+{#                            </div>#}
+{#                            <div class="item">#}
+{#                                    <span class="author">D. Alexandrovsky</span>, <span class="author">S. Putze</span>, <span class="author">M. Bonfert</span>, <span class="author">S. Höffner</span>, <span class="author">P. Michelmann</span>, <span class="author">D. Wenig</span>, <span class="author">R. Malaka</span>, <span class="author">J. D. Smeddinck</span>:#}
+{#                                <span class="name">#}
+{#                                        Examining Design Choices of Questionnaires in VR User Studies.#}
+{#                                </span>#}
+{#                                    <span class="publisher">#}
+{#                                        CHI &#x27;20, ACM#}
+{#                                    </span>#}
+{#                                <time datetime="2020-04-25" class="date">#}
+{#                                        2020-04-25#}
+{#                                    </time>#}
+{#                                <div class="doi">#}
+{#                                    <p><a href="https://dx.doi.org/10.1145/3313831.3376260">doi:10.1145/3313831.3376260</a></p>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <div class="item">#}
+{#                                    <span class="author">S. Putze</span>, <span class="author">D. Alexandrovsky</span>, <span class="author">F. Putze</span>, <span class="author">S. Höffner</span>, <span class="author">J. D. Smeddinck</span>, <span class="author">R. Malaka</span>:#}
+{#                                <span class="name">#}
+{#                                        Breaking The Experience: Effects of Questionnaires in VR User Studies.#}
+{#                                </span>#}
+{#                                    <span class="publisher">#}
+{#                                        CHI &#x27;20, ACM#}
+{#                                    </span>#}
+{#                                <time datetime="2020-04-25" class="date">#}
+{#                                        2020-04-25#}
+{#                                    </time>#}
+{#                                <div class="doi">#}
+{#                                    <p><a href="https://dx.doi.org/10.1145/3313831.3376144">doi:10.1145/3313831.3376144</a></p>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <div class="item">#}
+{#                                    <span class="author">J. Pfau</span>, <span class="author">R. Porzel</span>, <span class="author">M. Pomarlan</span>, <span class="author">V. S. Cangalovic</span>, <span class="author">S. Grudpan</span>, <span class="author">S. Höffner</span>, <span class="author">J. Bateman</span>, <span class="author">R. Malaka</span>:#}
+{#                                <span class="name">#}
+{#                                        Give MEANinGS to Robots with Kitchen Clash: A VR Human Computation Serious Game for World Knowledge Accumulation.#}
+{#                                </span>#}
+{#                                    <span class="publisher">#}
+{#                                        ICEC-JCSG 2019, Springer#}
+{#                                    </span>#}
+{#                                <time datetime="2019-11-04" class="date">#}
+{#                                        2019-11-04#}
+{#                                    </time>#}
+{#                                <div class="doi">#}
+{#                                    <p><a href="https://dx.doi.org/10.1007/978-3-030-34644-7_7">doi:10.1007/978-3-030-34644-7_7</a></p>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                    </section>#}
+{#                </section>#}
+{##}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Volunteer</h2>#}
+{#                    <section id="volunteer">#}
+{#                                <header>#}
+{#                                    <h3 class="company">#}
+{#                                        Inside (school magazine)#}
+{#                                    </h3>#}
+{#                                    <div class="date">#}
+{#                                        <time datetime="2009-09-01" class="startDate">#}
+{#                                            2009-09-01#}
+{#                                        </time>#}
+{#                                        –#}
+{#                                        <time datetime="2011-05-27" class="endDate">#}
+{#                                            2011-05-27#}
+{#                                        </time>#}
+{#                                    </div>#}
+{#                                </header>#}
+{#                            <div class="item">#}
+{#                            <div class="position">#}
+{#                                Co-Founder, Art Editor, Editor#}
+{#                            </div>#}
+{#                            <div class="website">#}
+{#                                <a href="http://d-nb.info/998514713">http://d-nb.info/998514713</a>#}
+{#                            </div>#}
+{#                            <div class="summary">#}
+{#                                <p>Layout and editing of articles, organizing team meetings.</p>#}
+{#                            </div>#}
+{#                            <ul class="highlights">#}
+{#                                <li>Increased initial circulation from 200 to 500, effectively reaching every second student.</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                    </section>#}
+{#                </section>#}
+{##}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Projects</h2>#}
+{#                    <section id="projects">#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                <h3 class="name">#}
+{#                                    cvloop#}
+{#                                </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2016-11-23" class="startDate">#}
+{#                                        2016-11-23#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2019-02-07" class="endDate">#}
+{#                                        2019-02-07#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                <div class="summary">#}
+{#                                    <em>Tutor at Biologically oriented Computer Vision group</em>#}
+{#                                    <p>Tool for video stream manipulation in Jupyter notebooks.</p>#}
+{#                                    <p><a href="https://github.com/shoeffner/cvloop">https://github.com/shoeffner/cvloop</a></p>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                <h3 class="name">#}
+{#                                    Wasabi#}
+{#                                </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2015-07-06" class="startDate">#}
+{#                                        2015-07-06#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2016-12-31" class="endDate">#}
+{#                                        2016-12-31#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                <div class="summary">#}
+{#                                    <em>Internship at Intuit Data Engineering and Analytics</em>#}
+{#                                    <p>Software as a service platform to perform platform agnostic A/B testing using a REST API.</p>#}
+{#                                    <p><a href="https://github.com/intuit/wasabi">https://github.com/intuit/wasabi</a></p>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="unit">#}
+{#                            <header>#}
+{#                                <h3 class="name">#}
+{#                                    Machine Learning Exercise Sheets#}
+{#                                </h3>#}
+{#                                <div class="date">#}
+{#                                    <time datetime="2016-04-08" class="startDate">#}
+{#                                        2016-04-08#}
+{#                                    </time>#}
+{#                                    –#}
+{#                                    <time datetime="2016-07-05" class="endDate">#}
+{#                                        2016-07-05#}
+{#                                    </time>#}
+{#                                </div>#}
+{#                            </header>#}
+{#                            <div class="item">#}
+{#                                <div class="summary">#}
+{#                                    <em>Tutor at Biologically oriented Computer Vision group</em>#}
+{#                                    <p>Homework sheets for the machine learning class at Osnabrück University.</p>#}
+{#                                    <p><a href="https://github.com/CogSciUOS/MachineLearningSheets">https://github.com/CogSciUOS/MachineLearningSheets</a></p>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </section>#}
+{#                </section>#}
+{##}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Awards</h2>#}
+{#                    <section id="awards">#}
+{#                        <header>#}
+{#                            <span class="title">#}
+{#                                Schülerzeitungspreis 2011: Sonderpreis Crossmedial#}
+{#                            </span>#}
+{#                            <div class="date">#}
+{#                            <time datetime="2011-06-20" class="date">#}
+{#                                2011-06-20#}
+{#                            </time>#}
+{#                            </div>#}
+{#                        </header>#}
+{#                        <div class="item">#}
+{#                            <div class="awarder">#}
+{#                                Bundesverband Deutscher Zeitungsverleger (BDZV)#}
+{#                            </div>#}
+{#                            <div class="summary">#}
+{#                                <em>Awarded for the Inside magazine for combining print and online media.</em>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <header>#}
+{#                            <span class="title">#}
+{#                                2nd Place “WoRtWiTz”#}
+{#                            </span>#}
+{#                            <div class="date">#}
+{#                            <time datetime="2010-06-29" class="date">#}
+{#                                2010-06-29#}
+{#                            </time>#}
+{#                            </div>#}
+{#                        </header>#}
+{#                        <div class="item">#}
+{#                            <div class="awarder">#}
+{#                                MHMK, Hochschule für Medien und Kommunikation#}
+{#                            </div>#}
+{#                            <div class="summary">#}
+{#                                <em>Awarded for the Inside magazine with praise especially of the professional layout and high quality articles.</em>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </section>#}
+{#                </section>#}
+{##}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Skills</h2>#}
+{#                    <section id="skills">#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Programming#}
+{#                            </div>#}
+{#                            <!--#}
+{#                            <div class="level Advanced">#}
+{#                                <em>Advanced</em>#}
+{#                                <div class="bar"></div>#}
+{#                            </div>#}
+{#                            -->#}
+{#                            <ul class="keywords">#}
+{#                                <li>Python (8+ years)</li>#}
+{#                                <li>C# (3+ years)</li>#}
+{#                                <li>LaTeX (11+ years)</li>#}
+{#                                <li>Java (5+ years)</li>#}
+{#                                <li>C++ (3 years)</li>#}
+{#                                <li>Matlab (2 years)</li>#}
+{#                                <li>HTML/CSS (13+ years)</li>#}
+{#                                <li>R, Prolog, JavaScript, PHP</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Software development &amp; tooling#}
+{#                            </div>#}
+{#                            <!--#}
+{#                            <div class="level Advanced">#}
+{#                                <em>Advanced</em>#}
+{#                                <div class="bar"></div>#}
+{#                            </div>#}
+{#                            -->#}
+{#                            <ul class="keywords">#}
+{#                                <li>git (9+ years)</li>#}
+{#                                <li>Docker (4+ years)</li>#}
+{#                                <li>bash (10+ years)</li>#}
+{#                                <li>GNU Make (6+ years)</li>#}
+{#                                <li>Github Actions, Gitlab CI, Travis</li>#}
+{#                                <li>macOS/Linux/Windows (6/10/17+ years)</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Frameworks &amp; Libraries#}
+{#                            </div>#}
+{#                            <!--#}
+{#                            <div class="level Beginner">#}
+{#                                <em>Beginner</em>#}
+{#                                <div class="bar"></div>#}
+{#                            </div>#}
+{#                            -->#}
+{#                            <ul class="keywords">#}
+{#                                <li>TensorFlow/Keras/Pytorch (4/2/1+ years)</li>#}
+{#                                <li>numpy/scipy/scikit-learn (8+ years)</li>#}
+{#                                <li>matplotlib (8+ years)</li>#}
+{#                                <li>SteamVR, OpenCV, dlib, OpenGL, Spark</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Database systems &amp; languages#}
+{#                            </div>#}
+{#                            <!--#}
+{#                            <div class="level Beginner">#}
+{#                                <em>Beginner</em>#}
+{#                                <div class="bar"></div>#}
+{#                            </div>#}
+{#                            -->#}
+{#                            <ul class="keywords">#}
+{#                                <li>SQLite, MySQL/MariaDB, Cassandra, SPARQL, Fuseki</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Other#}
+{#                            </div>#}
+{#                            <!--#}
+{#                            <div class="level undefined">#}
+{#                                <em>undefined</em>#}
+{#                                <div class="bar"></div>#}
+{#                            </div>#}
+{#                            -->#}
+{#                            <ul class="keywords">#}
+{#                                <li>ROS (1+ years)</li>#}
+{#                                <li>pandoc (5+ years)</li>#}
+{#                                <li>Raspberry Pi, Arduino, esp8266</li>#}
+{#                                <li>Unity3D (3+ years)</li>#}
+{#                                <li>3D printing (1+ years)</li>#}
+{#                                <li>AWS, Azure, self-hosted</li>#}
+{#                                <li>home-assistant</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                    </section>#}
+{#                </section>#}
+{##}
+{#                <!--section class="section">#}
+{#                    <h2 class="section-title" class="section-title">Interests</h2>#}
+{#                    <section id="interests">#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Open access#}
+{#                            </div>#}
+{#                            <ul class="keywords">#}
+{#                                <li>Free and open source software</li>#}
+{#                                <li>Open access publications</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Technology#}
+{#                            </div>#}
+{#                            <ul class="keywords">#}
+{#                                <li>Continuous integration and delivery</li>#}
+{#                                <li>Mobile robotics</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Board games#}
+{#                            </div>#}
+{#                            <ul class="keywords">#}
+{#                                <li>Strategy</li>#}
+{#                                <li>Competitive &amp; Cooperative</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="name">#}
+{#                                Sports#}
+{#                            </div>#}
+{#                            <ul class="keywords">#}
+{#                                <li>Bouldering</li>#}
+{#                                <li>Swimming</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                    </section>#}
+{#                </section-->#}
+{##}
+{#                <section class="section">#}
+{#                    <h2 class="section-title">Languages</h2>#}
+{#                    <section id="languages">#}
+{#                        <div class="item">#}
+{#                            <div class="language">#}
+{#                                German#}
+{#                            </div>#}
+{#                            <div class="fluency">#}
+{#                                <em>Native speaker</em>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <div class="language">#}
+{#                                English#}
+{#                            </div>#}
+{#                            <div class="fluency">#}
+{#                                <em>Fluent</em>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </section>#}
+{#                </section>#}
+                -->
+
+        </div>
+
+        <footer class="printfooter">
+            {{ firstname }} {{ familyname }}
+                – <span class="fa fa-map-marked-alt"></span>{{ location }} (DE)
+                    – <span class="fa fa-envelope"></span>{{ email }}
+        </footer>
+    </body>
+
+</html>
