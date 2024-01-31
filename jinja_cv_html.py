@@ -1,9 +1,5 @@
-import argparse
-from os import path as p
 import re
-import yaml
 import markdown
-from jinja2 import Template
 from jinja2.filters import FILTERS
 
 from util.text_util import split_into_sentences

@@ -1,5 +1,5 @@
 from os.path import dirname, isfile, join, splitext
-from os import listdir
+from os import listdir, getenv
 
 from flask import Flask, redirect, url_for, session, make_response, render_template, Response
 from flask import request
@@ -11,9 +11,13 @@ from jinja_cv_html import IGNORE_SECTIONS, SECTIONTRANSLATE, update, inline_edit
 from cv_builder import CVBuilder
 
 
-PATH = "/home/chris/Documents/projects/cstenkamp.de/components/cv/all_cvs.yaml"
-IMGROOT = "/home/chris/Documents/projects/cstenkamp.de/components/cv/"
-TEMPLATEPATH = "/home/chris/Documents/projects/cstenkamp.de/components/cv_builder/static/cv.html.jinja"
+FLASK_RUN_PORT   = getenv("FLASK_RUN_PORT")   or 8003
+TEMPLATE_PATH    = getenv("TEMPLATE_PATH")    or join(dirname(__file__), "static", "cv.html.jinja")
+IMG_ROOT         = getenv("IMG_ROOT")         or join(dirname(__file__), "..", "cv")
+YAML_PATH        = getenv("YAML_PATH")        or join(IMG_ROOT, "all_cvs.yaml")
+HUGO_PUBLIC_PATH = getenv("HUGO_PUBLIC_PATH") or "http://localhost:1313"
+GET_IMAGE_URL    = getenv("GET_IMAGE_URL")    or f"http://localhost:{FLASK_RUN_PORT}/getimage"
+CV_CSS_URL       = getenv("CV_CSS_URL")       or f"http://localhost:{FLASK_RUN_PORT}/cv.css"
 
 ####################################################################################
 
@@ -35,7 +39,7 @@ def before_request(*args, **kwargs):
 
 
 def get_variant(args, builder=None):
-    builder = builder or CVBuilder(PATH)
+    builder = builder or CVBuilder(YAML_PATH)
     variants = builder.list_variants()
     this_variant = {}
     for var in variants.keys():
@@ -43,10 +47,9 @@ def get_variant(args, builder=None):
     return this_variant
 
 
-def prepare_contentdict(cv_content, cvdir, get_image_url, hugo_public_path, sectiontranslate, ignoresections):
+def prepare_contentdict(cv_content, get_image_url, hugo_public_path, sectiontranslate, ignoresections):
     cnt = cv_content["Basic Info"]
-    cnt.update(cvpath = cvdir,
-               image_link = f"{get_image_url}?name={cnt['photo'][4:-1]}",
+    cnt.update(image_link = f"{get_image_url}?name={cnt['photo'][4:-1]}",
                homepage_link = f"https://{cnt['homepage']}",
                hugo_public_path = hugo_public_path,
                )
@@ -60,12 +63,12 @@ def prepare_contentdict(cv_content, cvdir, get_image_url, hugo_public_path, sect
 
 @app.route('/getimage')
 def get_image():
-    fname = join(IMGROOT, request.args.get("name"))
+    fname = join(IMG_ROOT, request.args.get("name"))
     if not isfile(fname):
-        fname = [i for i in listdir(IMGROOT) if splitext(i)[0] == request.args.get("name")]
+        fname = [i for i in listdir(IMG_ROOT) if splitext(i)[0] == request.args.get("name")]
         if len(fname) < 1:
             return ""
-        fname = join(IMGROOT, fname[0])
+        fname = join(IMG_ROOT, fname[0])
     return send_file(fname, mimetype='image/gif')
 
 @app.route('/cv.css')
@@ -77,14 +80,14 @@ def cv_style():
 @app.route("/listvariants")
 @cross_origin(supports_credentials=True)
 def list_variants():
-    builder = CVBuilder(PATH)
+    builder = CVBuilder(YAML_PATH)
     return builder.list_variants()
 
 
 @app.route("/getyaml", methods=['GET'])
 @cross_origin(supports_credentials=True)
 def get_yaml():
-    builder = CVBuilder(PATH)
+    builder = CVBuilder(YAML_PATH)
     variant = get_variant(request.args, builder)
     yaml = builder.build_lang_variant(**variant)
     return yaml
@@ -93,20 +96,19 @@ def get_yaml():
 @app.route("/getcv", methods=['GET'])
 @cross_origin(supports_credentials=True)
 def get_cv():
-    builder = CVBuilder(PATH)
+    builder = CVBuilder(YAML_PATH)
     variant = get_variant(request.args, builder)
     cv_content = builder.build_lang_variant(**variant, annotate_kind=True)
 
-    with open(TEMPLATEPATH) as rfile:
+    with open(TEMPLATE_PATH) as rfile:
         tmpl = Template(rfile.read())
 
     cnt = prepare_contentdict(cv_content=cv_content,
-                              cvdir=dirname(PATH),
-                              get_image_url="http://localhost:8003/getimage",
-                              hugo_public_path="http://localhost:1313",
+                              get_image_url=GET_IMAGE_URL,
+                              hugo_public_path=HUGO_PUBLIC_PATH,
                               sectiontranslate=SECTIONTRANSLATE,
                               ignoresections=IGNORE_SECTIONS)
-    cnt["cv_css_path"] = "http://localhost:8003/cv.css"
+    cnt["cv_css_path"] = CV_CSS_URL
     html = tmpl.render(**cnt)
 
     return html
@@ -114,4 +116,4 @@ def get_cv():
 ####################################################################################
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8003)
+    app.run(host="0.0.0.0", port=FLASK_RUN_PORT)

@@ -3,10 +3,8 @@ from datetime import datetime
 import re
 import yaml
 
-PATH = "/home/chris/Documents/projects/cstenkamp.de/components/cv/all_cvs.yaml"
-
-def main():
-    builder = CVBuilder(PATH)
+def main(path):
+    builder = CVBuilder(path)
     print(builder.list_variants())
     builder.build_lang_variant("de")
 
@@ -50,7 +48,6 @@ class CVBuilder():
         assert isinstance(val, (dict, str, int, float, list, tuple, set))
         if isinstance(val, str) and "img(" in val:
             assert re.match(r"img\((.*?)\)", val)[0] == "img("+re.match(r"img\((.*?)\)", val)[1]+")", "if you use 'img(..)', that must be the full value!"
-            print("TODO: img")
         if isinstance(val, str) and "date(" in val:
             date = datetime.strptime(re.match(r"date\((.*?)\)", val)[1], "%Y-%m-%d")
             fmtstring = self.yaml["Variants"]["Language"][lang]["datefmt"]
@@ -142,4 +139,5 @@ class CVBuilder():
 
 
 if __name__ == '__main__':
-    main()
+    from os.path import dirname, join
+    main(join(dirname(__file__), "..", "cv", "all_cvs.yaml"))

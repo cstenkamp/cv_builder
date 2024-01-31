@@ -4,3 +4,5 @@ jinja2
 flask_cors
 markdown
 fontawesomefree
+gunicorn
+psycopg2-binary
