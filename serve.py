@@ -15,9 +15,10 @@ FLASK_RUN_PORT   = getenv("FLASK_RUN_PORT")   or 8003
 TEMPLATE_PATH    = getenv("TEMPLATE_PATH")    or join(dirname(__file__), "static", "cv.html.jinja")
 IMG_ROOT         = getenv("IMG_ROOT")         or join(dirname(__file__), "..", "cv")
 YAML_PATH        = getenv("YAML_PATH")        or join(IMG_ROOT, "all_cvs.yaml")
-HUGO_PUBLIC_PATH = getenv("HUGO_PUBLIC_PATH") or "http://localhost:1313"
-GET_IMAGE_URL    = getenv("GET_IMAGE_URL")    or f"http://localhost:{FLASK_RUN_PORT}/getimage"
-CV_CSS_URL       = getenv("CV_CSS_URL")       or f"http://localhost:{FLASK_RUN_PORT}/cv.css"
+HUGO_PUBLIC_URL  = getenv("HUGO_PUBLIC_URL")  or "http://localhost:1313"
+BUILDER_BASE_URL = getenv("BUILDER_BASE_URL") or f"http://localhost:{FLASK_RUN_PORT}"
+GET_IMAGE_URL    = getenv("GET_IMAGE_URL")    or f"{BUILDER_BASE_URL}/getimage"
+CV_CSS_URL       = getenv("CV_CSS_URL")       or f"{BUILDER_BASE_URL}/cv.css"
 
 ####################################################################################
 
@@ -47,11 +48,11 @@ def get_variant(args, builder=None):
     return this_variant
 
 
-def prepare_contentdict(cv_content, get_image_url, hugo_public_path, sectiontranslate, ignoresections):
+def prepare_contentdict(cv_content, get_image_url, hugo_public_url, sectiontranslate, ignoresections):
     cnt = cv_content["Basic Info"]
     cnt.update(image_link = f"{get_image_url}?name={cnt['photo'][4:-1]}",
                homepage_link = f"https://{cnt['homepage']}",
-               hugo_public_path = hugo_public_path,
+               hugo_public_url = hugo_public_url,
                )
     cnt["sections"] = [{"title": v, "sectionkey": k, "content": cv_content[v]}
                          for k, vv in sectiontranslate.items() for v in vv if cv_content.get(v) and k not in ignoresections]
@@ -93,7 +94,7 @@ def get_yaml():
     return yaml
 
 
-@app.route("/getcv", methods=['GET'])
+@app.route("/cv", methods=['GET'])
 @cross_origin(supports_credentials=True)
 def get_cv():
     builder = CVBuilder(YAML_PATH)
@@ -105,7 +106,7 @@ def get_cv():
 
     cnt = prepare_contentdict(cv_content=cv_content,
                               get_image_url=GET_IMAGE_URL,
-                              hugo_public_path=HUGO_PUBLIC_PATH,
+                              hugo_public_url=HUGO_PUBLIC_URL,
                               sectiontranslate=SECTIONTRANSLATE,
                               ignoresections=IGNORE_SECTIONS)
     cnt["cv_css_path"] = CV_CSS_URL
