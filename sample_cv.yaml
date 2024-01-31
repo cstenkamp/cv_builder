@@ -1,0 +1,57 @@
+Variants:
+  Language:
+    en:
+      name:    English
+      default: true
+      datefmt: "%m/%d/%Y"
+    de:
+      name:    Deutsch
+      datefmt: "%d.%m.%Y"
+
+Translations:
+  en:
+    Hiwi:       Student research assistant
+    Lebenslauf: Curriculum Vitae
+  de:
+    Hiwi:       Studentische Hilfskraft
+
+Basic Info:
+  firstname:  John
+  familyname: Doe
+  title:      Lebenslauf
+  photo:      img(your_picture)
+
+Personal Information:
+  Date of birth:  date(1999-12-31)
+
+Education:
+- time:       2010
+  title:      High School Semester abroad
+  title_de:   Auslandsschuljahr
+  employer:   Cool School
+  place:      Cool School Address
+  website:    "[https://cool.school](https://cool.school)"
+  optlong:    In my Semester abroad, I did cool things
+  optlong_de: In meinem Auslandssemester hab ich ganz viele tolle sachen gemacht!
+  show_on:    de
+
+Programming Languages and Computer Skills [en] {paragraphs}:
+  - I like to have a text instead of bullet points for the programming languages
+  - In this text, I would just write about what I can do - just make sure to **highlight** the relevant languages and tools.
+
+Programmiersprachen und -kompetenzen [de]:
+  - Das selbe in grün
+
+Awards, Certificates and Stipends [en] {yearlist}:
+  '2016': Certificate of Awesomeness
+  '2015': Certificate of Non-Awesomeness
+
+Langs {doubleitem}:
+  English:
+  - fluent
+  - "[en] English Bachelor/Master and Jobs"
+  - "[de] Studium und Berufe in engl. Sprache"
+
+Hobbies and Interests [en]:
+- Programming CVs
+- Other things, I swear
