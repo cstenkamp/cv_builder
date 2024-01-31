@@ -3,8 +3,13 @@ from datetime import datetime
 import re
 import yaml
 
-PATH = "/home/chris/Documents/projects/cstenkamp.de/components/cv_generator/all_cvs.yaml"
-# TODO keep original order
+PATH = "/home/chris/Documents/projects/cstenkamp.de/components/cv/all_cvs.yaml"
+
+def main():
+    builder = CVBuilder(PATH)
+    print(builder.list_variants())
+    builder.build_lang_variant("de")
+
 
 class CVBuilder():
     def __init__(self, path):
@@ -17,12 +22,15 @@ class CVBuilder():
             cv = yaml.load(rfile, Loader=yaml.SafeLoader)
         return cv
 
+    def list_variants(self):
+        return {k: {v2["name"]: k2 for k2, v2 in v.items()} for k, v in self.yaml["Variants"].items()}
+
     def get_langs(self):
-        return set(self.yaml["Variants"]["Languages"].keys())
+        return set(self.yaml["Variants"]["Language"].keys())
         # print(cv["Translations"])
 
     def default_lang(self):
-        langs = self.yaml["Variants"]["Languages"]
+        langs = self.yaml["Variants"]["Language"]
         return [k for k, v in langs.items() if v.get("default")][0]
 
     def wordwise_translate(self, what, tolang):
@@ -31,28 +39,36 @@ class CVBuilder():
         if isinstance(what, (int, float)):
             what = str(what)
         if isinstance(what, str):
-            what = what.replace(":", " :")
+            what = what.replace(":", " :").replace("{", " {")
             what = " ".join([transl.get(i, i) for i in what.split(" ")])
-            what = what.replace(" :", ":")
+            what = what.replace(" :", ":").replace(" {", "{")
         elif isinstance(what, (list, set, tuple)):
             what = [self.wordwise_translate(i, tolang) for i in what]
         return what
 
-    def hndlval(self, val, lang):
+    def hndlval(self, val, lang, key=""):
         assert isinstance(val, (dict, str, int, float, list, tuple, set))
         if isinstance(val, str) and "img(" in val:
             assert re.match(r"img\((.*?)\)", val)[0] == "img("+re.match(r"img\((.*?)\)", val)[1]+")", "if you use 'img(..)', that must be the full value!"
             print("TODO: img")
         if isinstance(val, str) and "date(" in val:
             date = datetime.strptime(re.match(r"date\((.*?)\)", val)[1], "%Y-%m-%d")
-            fmtstring = self.yaml["Variants"]["Languages"][lang]["datefmt"]
+            fmtstring = self.yaml["Variants"]["Language"][lang]["datefmt"]
             val = re.sub(r"date\(.*?\)", date.strftime(fmtstring), val)
-        return self.subdict_select_keys(val, lang) if isinstance(val, dict) \
+        result = self.subdict_select_keys(val, lang) if isinstance(val, dict) \
                 else self.wordwise_translate(val, lang) if isinstance(val, (str, int, float)) \
                 else self.handle_sublist(val, lang) if isinstance(val, (list, tuple, set)) \
                 else val
+        # now if the key had design-instructions (in curly brackets) add that here
+        if re.match(r".*?\{.*?}", key):
+            design_info = re.match(r".*?\{(.*?)}", key)[1]
+            if isinstance(result, dict):
+                result["design"] = design_info
+            elif isinstance(result, list):
+                result = [f"<!--design: {design_info}-->"]+result
+        return result
 
-    def build_lang_variant(self, language):
+    def build_lang_variant(self, language, annotate_kind=False):
         cv = {k: v for k, v in self.yaml.items() if k not in ["Variants", "Translations"]}
         ncv = {}
         for k, v in cv.items():
@@ -61,9 +77,16 @@ class CVBuilder():
                 ncv[k] = v
             elif f"[{language}]" in k:
                 ncv[re.sub(r"(\[.*?])", "", k).strip()] = v
-        cv = {k: self.hndlval(v, language) for k, v in ncv.items()}
-        cv = {k: v for k, v in cv.items() if v}
-        pprint(cv, width=200, sort_dicts=False)
+        cv = {k: self.hndlval(v, language, k) for k, v in ncv.items()}
+        cv = {(k if not re.match(r".*?\{(.*?)}", k) else re.match(r"(.*?)\{", k)[1]).strip(): v for k, v in cv.items() if v}
+        # pprint(cv, width=200, sort_dicts=False)
+        if annotate_kind:
+            cv = {k: {"chronog": v} if isinstance(v, list) and all(isinstance(i, dict) for i in v) \
+                  else {"lst": v} if isinstance(v, list) \
+                  else {"basic": {k2: v2 for k2, v2 in v.items() if k2 != "design"}, "design": v["design"]} if isinstance(v, dict) and "design" in v \
+                  else v \
+                  for k, v in cv.items()}
+        return cv
 
     def subdict_select_keys(self, di, lang):
         other_langs = self.get_langs() - {lang}
@@ -76,7 +99,7 @@ class CVBuilder():
             if usekey:
                 if f"_{lang}" in k: # then don't use the default key
                     removekeys.add(k.replace(f"_{lang}", ""))
-                ndi[k] = self.hndlval(v, lang)
+                ndi[k] = self.hndlval(v, lang, k)
         di = {}
         # now remove the default keys if we took the _smth keys
         for k, v in ndi.items():
@@ -117,7 +140,6 @@ class CVBuilder():
         return nlst
 
 
-# TODO handle date(), img()
 
-builder = CVBuilder(PATH)
-builder.build_lang_variant("de")
+if __name__ == '__main__':
+    main()

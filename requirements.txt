@@ -1,2 +1,6 @@
 pyyaml
 flask
+jinja2
+flask_cors
+markdown
+fontawesomefree
