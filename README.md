@@ -57,6 +57,18 @@ A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported
 * YAML autoformatten dazu wie ich das jetzt hab
 * Explain HERE how the different ´cvitem` Latex entries are generated
 * yearlist Zeitstrahl design
+* Postprocessing-script to make links to my websites
+* Allow for dividers in sections ("Tutor Jobs")
+* Allow to merge different cats (such that I can do voctional experience in non-CS under another headline)
+
+### NOW
+
+* _de nutzen können für sprache, aber auch _long für lange descriptions und auch nen ding für nontech, aber das halt variabel halten und dafür nen extra-yaml-teil 
+* autoformatten dazu wie ich das jetzt hab
+* CV mit postprocessing-script dass die links macht
+* Subsections (Tutor Jobs)
+
+
 
 ## Further links
 

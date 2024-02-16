@@ -47,7 +47,12 @@ def update(original_dict, future_dict = None, fn = None):
 
 def inline_edit(txt):
     txt = txt.replace("\small ", "").replace("\small", "")
+
+    # compact markdown-lists
+    txt = re.sub(r"(^\s?[^*].*?)\\n", r"\1\n\n", txt) # first markdown-list-element without double newline
+    txt = txt.replace("\\n", "\n")
     txt = markdown.markdown(txt).removeprefix("<p>").removesuffix("</p>")
+
     txt = txt.replace("<li>", "<li class=noinline>")
     for forbid_txt in ["enclosed", "handed in"]:
         if forbid_txt in txt: # remove the text, but keep the HTML-tags lol
