@@ -146,12 +146,14 @@
 
                 </section>
 
-                <section class="section main-summary">
-                    <h2 class="section-title">About</h2>
-                    <section>
-                        <p lang="en">{{ about_text }}</p>
+                {% if about_text %}
+                    <section class="section main-summary">
+                        <h2 class="section-title">About</h2>
+                        <section>
+                            <p lang="en">{{ about_text }}</p>
+                        </section>
                     </section>
-                </section>
+                {% endif %}
 
                 {% for section in sections %}
                     <section class="section">
@@ -181,12 +183,16 @@
                                     </header>
                                     <div class="item">
                                         <div class="position">
-                                            {{ exp.title }}
+                                            {% if exp.hp_link %}
+                                                <a href="{{ exp.hp_link }}" class="website_link">{{ exp.title }}<sup style="position: relative; top: -0.5em; font-size: 70%; "><span class="fa fa-light fa-link"></span></sup></a>
+                                            {% else %}
+                                                {{ exp.title }}
+                                            {% endif %}
                                         </div>
                                         {% if exp.optshort | regex_search('\[(.*?)\]') is none %}
                                             {% if exp.website is defined %}
                                                 <div class="website">
-                                                   {{ exp.website }}
+                                                   <span class="fa fa-globe"></span>{{ exp.website }}
                                                 </div>
                                             {% endif %}
                                             <div class="summary">
@@ -197,7 +203,7 @@
                                             </ul>
                                         {% else %}
                                             <div class="website">
-                                                <a href="{{ exp.optshort | regex_search('\[(.*?)\]') }}">{{ exp.optshort | regex_search('\((.*?)\)') }}</a>
+                                                <span class="fa fa-globe"></span><a href="{{ exp.optshort | regex_search('\[(.*?)\]') }}">{{ exp.optshort | regex_search('\((.*?)\)') }}</a>
                                             </div>
                                             <div class="summary">
                                                 <p>{{ exp.optlong }}</p>
@@ -216,7 +222,7 @@
                                 {% set design = design.design.strip() %}
 
                                 {% if design == "default" %}
-                                    <div class="listitems"><ul>
+                                    <div class="listitems dottedlinks"><ul>
                                     {% for val in section.content.lst %}
                                         {% if not val.startswith('<!--design:') %}
                                             <li class=noinline>

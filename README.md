@@ -48,7 +48,7 @@ A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported
 
 * Special Sections: 
   * `Variants`
-  * `Trannslations`
+  * `Translations`
 * Specify either `website` or `optshort` for list-items
 
 ## TODO
@@ -60,6 +60,9 @@ A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported
 * Postprocessing-script to make links to my websites
 * Allow for dividers in sections ("Tutor Jobs")
 * Allow to merge different cats (such that I can do voctional experience in non-CS under another headline)
+
+* If I have languages [de, en] (en default) and length [short, long] (short default), and for one thing I have the entries xyz, xyz_long & xyz_de.... and no xyz_de_long, then how do I decide if that one takes xyz_long or xyz_de? -> PRIORITY 
+
 
 ### NOW
 

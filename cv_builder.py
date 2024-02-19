@@ -21,7 +21,7 @@ class CVBuilder():
         return cv
 
     def list_variants(self):
-        return {k: {v2["name"]: k2 for k2, v2 in v.items()} for k, v in self.yaml["Variants"].items()}
+        return {k: {v2["name"]: k2 for k2, v2 in v.items() if k2 not in "priority"} for k, v in self.yaml["Variants"].items()}
 
     def get_langs(self):
         return set(self.yaml["Variants"]["Language"].keys())
@@ -29,7 +29,7 @@ class CVBuilder():
 
     def default_lang(self):
         langs = self.yaml["Variants"]["Language"]
-        return [k for k, v in langs.items() if v.get("default")][0]
+        return [k for k, v in langs.items() if k not in ["priority"] and v.get("default")][0]
 
     def wordwise_translate(self, what, tolang):
         # TODO does not work if there's eg a colon after the word
@@ -65,7 +65,7 @@ class CVBuilder():
                 result = [f"<!--design: {design_info}-->"]+result
         return result
 
-    def build_lang_variant(self, language, annotate_kind=False):
+    def build_lang_variant(self, language, annotate_kind=False, **kwargs):
         cv = {k: v for k, v in self.yaml.items() if k not in ["Variants", "Translations"]}
         ncv = {}
         for k, v in cv.items():

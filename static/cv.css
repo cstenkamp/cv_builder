@@ -798,3 +798,18 @@ footer.printfooter {
 .listitems .noinline:before {
   content: "";
 }
+
+.website_link {
+    text-decoration:underline;
+    text-decoration-style: dotted;
+}
+
+.dottedlinks a{
+    text-decoration:underline;
+    text-decoration-style: dotted;
+}
+
+.dottedlinks a:hover{
+    text-decoration: underline;
+    text-decoration-style: solid;
+}
