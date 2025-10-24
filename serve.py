@@ -97,7 +97,7 @@ def get_yaml():
     print("Request Args:", dict(request.args))
     variant = get_variant(request.args, builder)
     print("Used variant:", variant)
-    yaml = builder.build_lang_variant(**variant)
+    yaml = builder.build_variant(**variant)
     return yaml
 
 
@@ -106,7 +106,7 @@ def get_yaml():
 def get_cv():
     builder = CVBuilder(YAML_PATH)
     variant = get_variant(request.args, builder)
-    cv_content = builder.build_lang_variant(**variant, annotate_kind=True)
+    cv_content = builder.build_variant(**variant, annotate_kind=True)
 
     with open(TEMPLATE_PATH) as rfile:
         tmpl = Template(rfile.read())

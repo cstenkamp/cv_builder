@@ -51,6 +51,13 @@ A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported
   * `Translations`
 * Specify either `website` or `optshort` for list-items
 
+## ADDITIONS 2025
+* Can have [de,lg] in titles to only show for this combination
+* How are variants used? 
+  * `[de]` in section title
+  * `_de` in key
+  * dictionary has key `show_on` with value `de`
+
 ## TODO
 
 * _de nutzen können für sprache, aber auch _long für lange descriptions und auch nen ding für nontech, aber das halt variabel halten und dafür nen extra-yaml-teil 

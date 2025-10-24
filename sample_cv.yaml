@@ -1,5 +1,5 @@
-Variants:
-  Language:
+variants:
+  language:
     en:
       name:    English
       default: true
@@ -8,7 +8,7 @@ Variants:
       name:    Deutsch
       datefmt: "%d.%m.%Y"
 
-Translations:
+translations:
   en:
     Hiwi:       Student research assistant
     Lebenslauf: Curriculum Vitae
