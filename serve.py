@@ -1,10 +1,8 @@
 from os.path import dirname, isfile, join, splitext
 from os import listdir, getenv
 
-from flask import Flask, redirect, url_for, session, make_response, render_template, Response
-from flask import request
+from flask import Flask, make_response, request, send_file
 from flask_cors import CORS, cross_origin
-from flask import send_file
 from jinja2 import Template
 
 from jinja_cv_html import IGNORE_SECTIONS, SECTIONTRANSLATE, update, inline_edit
@@ -42,9 +40,16 @@ def before_request(*args, **kwargs):
 def get_variant(args, builder=None):
     builder = builder or CVBuilder(YAML_PATH)
     variants = builder.list_variants()
+    defaults = builder.default_variants()
     this_variant = {}
     for var in variants.keys():
-        this_variant[var.lower()] = args.get(var.lower()) if args.get(var.lower()) not in [None, "null"] else builder.default_lang()
+        key = var.lower()
+        val = args.get(key)
+        if val is None or val == "null":
+            # use the per-category default from the YAML (fall back to language default)
+            this_variant[key] = defaults.get(var) or builder.default_lang()
+        else:
+            this_variant[key] = val
     return this_variant
 
 
@@ -89,7 +94,9 @@ def list_variants():
 @cross_origin(supports_credentials=True)
 def get_yaml():
     builder = CVBuilder(YAML_PATH)
+    print("Request Args:", dict(request.args))
     variant = get_variant(request.args, builder)
+    print("Used variant:", variant)
     yaml = builder.build_lang_variant(**variant)
     return yaml
 

@@ -1,6 +1,6 @@
 # CV-Generator
 
-A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported to Latex and thus PDF (upcoming) as well as HTML. This repo can run as a separate container and hosts the HTML in Flask (see https://cstenkamp.de/getcv/cv), which can even be embedded into Hugo (see my upcoming blogpost about this). It is customizable and allows currently for multiple languages with translations and content that's only supposed to be in one language - future work will extend this to also be able to customize text length or categories of content - stay tuned for that. 
+A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported to Latex and thus PDF (upcoming) as well as HTML. This repo can run as a separate container and hosts the HTML in Flask (see https://cstenkamp.de/getcv/cv), which can even be embedded into Hugo (see my [blogpost](https://cstenkamp.de/tech_posts/hugo_dynamic_content/)). It is customizable and allows currently for multiple languages with translations and content that's only supposed to be in one language - future work will extend this to also be able to customize text length or categories of content - stay tuned for that. 
 
 ## Features
 
@@ -60,6 +60,7 @@ A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported
 * Postprocessing-script to make links to my websites
 * Allow for dividers in sections ("Tutor Jobs")
 * Allow to merge different cats (such that I can do voctional experience in non-CS under another headline)
+* Tex-File contains work-contactinfo, should be able to also add that in yaml
 
 * If I have languages [de, en] (en default) and length [short, long] (short default), and for one thing I have the entries xyz, xyz_long & xyz_de.... and no xyz_de_long, then how do I decide if that one takes xyz_long or xyz_de? -> PRIORITY 
 

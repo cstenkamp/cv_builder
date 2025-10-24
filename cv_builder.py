@@ -2,26 +2,52 @@ from pprint import pprint
 from datetime import datetime
 import re
 import yaml
+import os
 
 def main(path):
     builder = CVBuilder(path)
-    print(builder.list_variants())
-    builder.build_lang_variant("de")
+    print("Variants:", builder.list_variants())
+    cv = builder.build_lang_variant("de")
+    print()
+
 
 
 class CVBuilder():
     def __init__(self, path):
-        self.path = path
+        self.path = os.path.abspath(path)
         self.yaml = self.load_yaml()
         self.translations = self.yaml["Translations"]
 
     def load_yaml(self):
+        print("CV YAML Path:", self.path)
         with open(self.path, "r") as rfile:
             cv = yaml.load(rfile, Loader=yaml.SafeLoader)
         return cv
 
     def list_variants(self):
         return {k: {v2["name"]: k2 for k2, v2 in v.items() if k2 not in "priority"} for k, v in self.yaml["Variants"].items()}
+
+    def default_variants(self):
+        """Return a dict of variant defaults as specified in the YAML.
+
+        Example output: {"Language": "en", "Length": "sh", "Cat": "tech"}
+        Keys are the Variant categories as in the YAML (not lowercased).
+        If no explicit default is found for a category, the first non-"priority" key is returned.
+        """
+        defaults = {}
+        for varname, opts in self.yaml.get("Variants", {}).items():
+            default_key = None
+            for k, v in opts.items():
+                if k == "priority":
+                    continue
+                # v is expected to be a dict for actual variant entries
+                if isinstance(v, dict) and v.get("default"):
+                    default_key = k
+                    break
+                if default_key is None:
+                    default_key = k
+            defaults[varname] = default_key
+        return defaults
 
     def get_langs(self):
         return set(self.yaml["Variants"]["Language"].keys())
@@ -65,6 +91,7 @@ class CVBuilder():
                 result = [f"<!--design: {design_info}-->"]+result
         return result
 
+    # TODO be able to check all links for 404s
     def build_lang_variant(self, language, annotate_kind=False, **kwargs):
         cv = {k: v for k, v in self.yaml.items() if k not in ["Variants", "Translations"]}
         ncv = {}
