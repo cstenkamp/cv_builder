@@ -6,3 +6,4 @@ markdown
 fontawesomefree
 gunicorn
 psycopg2-binary
+requests

@@ -4,6 +4,8 @@ import re
 import yaml
 import os
 from itertools import permutations, chain
+import requests
+
 
 def main(path):
     builder = CVBuilder(path)
@@ -11,6 +13,9 @@ def main(path):
     print("Defaults:", builder.default_variants())
     print("Postfixes:", builder.all_postfixes())
     cv = builder.build_variant(language="de")
+
+    print("All Links:", builder.all_links)
+    builder.check_links()
     print()
 
 
@@ -20,6 +25,7 @@ class CVBuilder():
         self.path = os.path.abspath(path)
         self.yaml = self.load_yaml()
         self.translations = self.yaml["translations"]
+        self.all_links = []
 
     def load_yaml(self):
         print("CV YAML Path:", self.path)
@@ -62,12 +68,6 @@ class CVBuilder():
         return sorted(perms, key=lambda p: len(p), reverse=True)  # we want to go from long to short
         # once we find the most specific postfix, we can remove all others
 
-    # def _get_unused_postfixes(self, variant):
-    #     # we can sort out all of the items that have any of the postfix-combinations returned here
-    #     unused_postfixes = set(self.all_postfixes()) - set(variant.values())
-    #     perms = list(chain.from_iterable(permutations(unused_postfixes, i) for i in range(1, len(unused_postfixes)+1)))
-    #     return sorted(perms, key=lambda p: len(p), reverse=True) # we want to go from long to short
-
     # === language tools ===
 
     def wordwise_translate(self, what, tolang):
@@ -94,24 +94,25 @@ class CVBuilder():
 
     # === main builder ===
 
-    # TODO be able to check all links for 404s
     def build_variant(self, language, annotate_kind=True, **kwargs):
         variant = {**self.default_variants(), **{"language": language, **kwargs}}
         print("Building variant:", variant)
 
         # remove all entries for a variants not considered here (eg. "Programmiersprachen [de]" in english version):
-        unused_keybrackets = ["["+",".join(i)+"]" for i in self._get_unused_postfixes(variant)]
-        cv = {k: v for k, v in self.yaml.items() if k not in ["variants", "translations"]}
-
-        # translate all section keys according to the translation-dict
+        considered_keybrackets = ["[" + ",".join(i) + "]" for i in self._get_used_postfixes(variant)]
         ncv = {}
-        for k, v in cv.items():
-            k = self.wordwise_translate(k, language)
-            if not re.match(r".*?\[.*?].*?", k):
-                ncv[k] = v
-            elif f"[{language}]" in k:
-                ncv[re.sub(r"(\[.*?])", "", k).strip()] = v
-
+        for k, v in self.yaml.items():
+            if k not in ["variants", "translations"]:
+                k = self.wordwise_translate(k, language)
+                if not re.match(r".*?\[.*?\].*?", k):
+                    ncv[k] = v
+                else:
+                    for var in considered_keybrackets:
+                        if var in k:
+                            key = re.sub(r"(\[.*?\])", "", k).strip()
+                            if key not in ncv: # we go from long to short, so the most specific gets looked at first
+                                ncv[key] = v
+        print()
         # go through the sections for selection and translation
         cv = {k: self.handle_values(v, variant, k) for k, v in ncv.items()}
         cv = {(k if not re.match(r".*?\{(.*?)}", k) else re.match(r"(.*?)\{", k)[1]).strip(): v for k, v in cv.items() if v}
@@ -123,7 +124,7 @@ class CVBuilder():
         #           else {"basic": {k2: v2 for k2, v2 in v.items() if k2 != "design"}, "design": v["design"]} if isinstance(v, dict) and "design" in v \
         #           else v \
         #           for k, v in cv.items()}
-        # return cv
+        return cv
 
     # === The functions that are recursively called on all dictionaries & lists to get the right variant etc ===
 
@@ -144,6 +145,11 @@ class CVBuilder():
                 else self.handle_sublist(val, variant) if isinstance(val, (list, tuple, set)) \
                 else val
 
+        # always add links...
+        if isinstance(val, str):
+            for j in re.findall(r"\[.*?\]\((.*?)\)", val):
+                self.all_links.append(j if j.startswith("http") else "https://cstenkamp.de/" + j.removeprefix("/"))
+
         # now if the key had design-instructions (in curly brackets) add that here
         if re.match(r".*?\{.*?}", key):
             design_info = re.match(r".*?\{(.*?)}", key)[1]
@@ -155,35 +161,40 @@ class CVBuilder():
 
 
     def handle_subdict(self, di, variant):
-        unused_postfixes = ["_"+"_".join(i) for i in self._get_unused_postfixes(variant)]
         used_postfixes = ["_"+"_".join(i) for i in self._get_used_postfixes(variant)]
-
-        # remove all those keys that indicate undemanded variants (eg. title_de_short) - and keep track of
-        # which ones we use, because if we take special versions we have to remove the default pendants (eg. title if we take title_de)
-        # THIS BELOW IS WRONG - MAKE IT DIFFERENTLY, TAKE THE LONGEST POSTFIX-COMBINATION THAT MATCHES AND REMOVE ALL OTHERS
-
-        ndi, ignorekeys = {}, set()
-        for k, v in sorted(di.items(), key=lambda x: x.count("_"), reverse=True):
-            if (not "_hidden" in k) and (not any(k.endswith(pf) for pf in unused_postfixes)) and (k not in ignorekeys):
-                ndi[k] = self.handle_values(v, variant, k)
-                # now if we took a special version, remove all others including the default one
-                for i in used_postfixes:
-                    if k.endswith(i):
-                        ignorekeys.add(k.removesuffix(i))
-                        if k in ndi:
-                            ndi[k.removesuffix(i)] = ndi.pop(k)
-                        # we need ignorekeys if the default comes after, and the other part overwrites it if it came before
-
-        di = {self.wordwise_translate(k, variant["language"]): self.wordwise_translate(v, variant["language"]) for k, v in ndi.items()}
+        # remove all those keys that indicate undemanded variants (eg. title_de_short) - for that
+        # we take the longest postfix-combination that matches, and then remove all others of the same name
+        varianted_keys = variant_basekeys = {k for k in di.keys() if any(i in k for i in used_postfixes)}
+        for pf in self.all_postfixes():
+            variant_basekeys = {i.removesuffix(f"_{pf}")for i in variant_basekeys}
+        basekeys2 = {i for i in variant_basekeys}
+        used_variants = {}
+        for pf in used_postfixes:
+            for var in varianted_keys:
+                if var.endswith(pf) and var.removesuffix(pf) in variant_basekeys:  # the first found one is the longest -> ignore all others
+                    # print(f"{var.removesuffix(pf)} -> {var}")
+                    variant_basekeys.remove(var.removesuffix(pf))
+                    used_variants[var] = var.removesuffix(pf)
+        di = {used_variants.get(k, k): v for k, v in di.items() if (not any(k.endswith("_"+i) for i in self.all_postfixes()) or k in used_variants) and v}
 
         # now handle the special key "show_on"
         if "show_on" in di:
             if isinstance(di["show_on"], str):
-                di["show_on"] = [di["show_on"]]
-            if variant in di["show_on"]:
+                di["show_on"] = set(i.strip() for i in di["show_on"].split(","))
+            if set(di["show_on"]).issubset(set(variant.values())):
                 di = {k: v for k, v in di.items() if k != "show_on"}
             else:
-                return {}
+                di = {}
+
+        # check links
+        for v in di.values():
+            if isinstance(v, str) and re.match(r"\[.*?\]\(.*?\)", v):
+                for i in re.findall(r"\[.*?\]\((.*?)\)", v):
+                    self.all_links.append(i if i.startswith("http") else "https://cstenkamp.de/" + i.removeprefix("/"))
+        if di.get("hp_link"):
+            self.all_links.append(di["hp_link"] if di["hp_link"].startswith("http") else "https://cstenkamp.de/" + di["hp_link"].removeprefix("/"))
+
+        di = {self.wordwise_translate(k, variant["language"]): self.handle_values(v, variant, k) for k, v in di.items()}
         # pprint(di, width=200, sort_dicts=False)
         return di
 
@@ -192,20 +203,39 @@ class CVBuilder():
             lst = self.handle_textual_sublist(lst, variant)
         else:
             lst = [self.handle_values(elem, variant) for elem in lst]
-        lst = [i for i in lst if i]
-        # pprint(lst, width=200, sort_dicts=False)
-        return lst
+        return [self.wordwise_translate(i, variant["language"]) for i in lst if i]
 
     def handle_textual_sublist(self, lst, variant):
-        unused_postfixes = ["_"+"_".join(i) for i in self._get_unused_postfixes(variant)]
         nlst = []
         for elem in lst:
-            if not any(elem.endswith(f"[{pf}]") for pf in unused_postfixes):
-                # TODO add this below back
-                # if f"[{lang}]" in elem: # then don't use the default key
-                #     elem = elem.replace(f"[{lang}]", "").strip()
+            if (parantheses := set(re.findall(r"\[(.*?)\]", elem))):
+                parantheses = set(i.strip() for j in parantheses for i in j.split(","))
+                if parantheses.issubset(set(variant.values())):
+                    nlst.append(re.sub(r"\[.*?\]", "", elem).strip())
+                elif not len(parantheses - set(self.all_postfixes())) < len(parantheses):
+                    nlst.append(elem)
+            else:
                 nlst.append(elem)
+        for i in nlst:
+            for j in re.findall(r"\[.*?\]\((.*?)\)", i):
+                self.all_links.append(j if j.startswith("http") else "https://cstenkamp.de/"+j.removeprefix("/"))
         return nlst
+
+    def check_links(self, timeout=20):
+        self.all_links = set(self.all_links)
+        print(f"Testing {len(self.all_links)} links...")
+        results = []
+        for url in self.all_links:
+            try:
+                r = requests.get(url, timeout=10)
+                results.append((url, r.status_code, r.ok))
+                if not r.ok or r.status_code != 200:
+                    print(f"{url} returned {r.status_code}")
+            except requests.RequestException as e:
+                results.append((url, None, False))
+                print(f"{url} raised an Exception")
+        return results
+
 
 
 
