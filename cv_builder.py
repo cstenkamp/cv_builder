@@ -108,7 +108,8 @@ class CVBuilder():
                     ncv[k] = v
                 else:
                     for var in considered_keybrackets:
-                        if var in k:
+                        k = re.sub(r'\[([^\]]*)\]', lambda m: '[' + re.sub(r',\s+', ',', m.group(1)) + ']', k)
+                        if var in k:  # ^ # remove spaces after commas in brackets
                             key = re.sub(r"(\[.*?\])", "", k).strip()
                             if key not in ncv: # we go from long to short, so the most specific gets looked at first
                                 ncv[key] = v
@@ -118,12 +119,12 @@ class CVBuilder():
         cv = {(k if not re.match(r".*?\{(.*?)}", k) else re.match(r"(.*?)\{", k)[1]).strip(): v for k, v in cv.items() if v}
         pprint(cv, width=200, sort_dicts=False)
 
-        # if annotate_kind:
-        #     cv = {k: {"chronog": v} if isinstance(v, list) and all(isinstance(i, dict) for i in v) \
-        #           else {"lst": v} if isinstance(v, list) \
-        #           else {"basic": {k2: v2 for k2, v2 in v.items() if k2 != "design"}, "design": v["design"]} if isinstance(v, dict) and "design" in v \
-        #           else v \
-        #           for k, v in cv.items()}
+        if annotate_kind:
+            cv = {k: {"chronog": v} if isinstance(v, list) and all(isinstance(i, dict) for i in v) \
+                  else {"lst": v} if isinstance(v, list) \
+                  else {"basic": {k2: v2 for k2, v2 in v.items() if k2 != "design"}, "design": v["design"]} if isinstance(v, dict) and "design" in v \
+                  else v \
+                  for k, v in cv.items()}
         return cv
 
     # === The functions that are recursively called on all dictionaries & lists to get the right variant etc ===
@@ -175,7 +176,8 @@ class CVBuilder():
                     # print(f"{var.removesuffix(pf)} -> {var}")
                     variant_basekeys.remove(var.removesuffix(pf))
                     used_variants[var] = var.removesuffix(pf)
-        di = {used_variants.get(k, k): v for k, v in di.items() if (not any(k.endswith("_"+i) for i in self.all_postfixes()) or k in used_variants) and v}
+        # di = {used_variants.get(k, k): v for k, v in di.items() if (not any(k.endswith("_"+i) for i in self.all_postfixes()) or k in used_variants) and v}
+        di = {used_variants.get(k, k): v for k, v in di.items() if ((not any(k.endswith("_"+i) for i in self.all_postfixes()) and k not in basekeys2) or k in used_variants) and v}
 
         # now handle the special key "show_on"
         if "show_on" in di:

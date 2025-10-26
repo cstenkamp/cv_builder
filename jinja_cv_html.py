@@ -6,8 +6,8 @@ from util.text_util import split_into_sentences
 
 SECTIONTRANSLATE = {
     "personal_data": ["Personal Information", "Persönliche Daten"],
-    "education": ["Education", "Ausbildung"],
-    "work": ["Vocational Experience", "Experience", "Teaching Experience", "Berufserfahrung"],
+    "education": ["Education", "Ausbildung", "Bildungsweg"],
+    "work": ["Vocational Experience", "Experience", "Teaching Experience", "Berufserfahrung", "Lehrerfahrung"],
     "volunteer": ["Honorary Offices and Academic Self Government", "Ehrenamt und akademische Selbstverwaltung", "Ehrenamt"],
     "skills": ["Programming Languages and Computer Skills", "Programmiersprachen und -kompetenzen"],
     "awards": ["Awards, Certificates and Stipends"],
