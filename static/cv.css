@@ -774,6 +774,20 @@ footer.printfooter {
     padding-left: 5px;
 }
 
+.dict table {
+    width: 100%;
+}
+
+.dict table tr td {
+    padding-top: 10px;
+    padding-left: 5px;
+}
+
+.dict .name {
+    margin-right: 3px;
+    margin-left: -15px;
+}
+
 .yearlist h3 {
     font-size: 14px;
     font-weight: normal;

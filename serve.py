@@ -61,6 +61,14 @@ def prepare_contentdict(cv_content, get_image_url, hugo_public_url, sectiontrans
                )
     cnt["sections"] = [{"title": v, "sectionkey": k, "content": cv_content[v]}
                          for k, vv in sectiontranslate.items() for v in vv if cv_content.get(v) and k not in ignoresections]
+    unknown_sections = [{"title": sec, "sectionkey": "unknown", "content": cv_content[sec]}
+                         for sec in [i for i in cv_content.keys() if i not in [i for j in sectiontranslate.values() for i in j] and i not in ignoresections]]
+    # now we paste the unknown sections at the unknown position
+    unkown_pos = list(sectiontranslate.keys()).index("unknown")
+    after_unknown_secs = [elem for i, elem in enumerate(list(sectiontranslate.keys())) if i > unkown_pos]
+    unknown_ind = next(i for i, x in enumerate(cnt["sections"]) if x["sectionkey"] in after_unknown_secs)
+    for sec in reversed(unknown_sections):
+        cnt["sections"].insert(unknown_ind, sec)
     cnt = update(cnt, fn=inline_edit)
     return cnt
 

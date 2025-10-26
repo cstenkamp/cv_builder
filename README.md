@@ -58,6 +58,7 @@ A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported
   * `_de` in key
   * dictionary has key `show_on` with value `de`
   * `[de] description` in a description
+* design {dict}
 
 ## TODO
 

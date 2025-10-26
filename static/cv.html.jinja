@@ -288,6 +288,21 @@
                                             {% endfor %}
                                         </table>
                                     </div>
+                                {% elif design == "dict" %}
+                                    <div class="dict">
+                                        <table>
+                                            {% for key,val in section.content.basic.items() %}
+                                              <tr>
+                                                <td class="">
+                                                    <h4 class="name">{{ key }}</h4>
+                                                </td>
+                                                <td class="">
+                                                    {{ val }}
+                                                </td>
+                                              </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
                                 {% endif %}
                             {% else %}
                                 {% set itembase = section.content %}

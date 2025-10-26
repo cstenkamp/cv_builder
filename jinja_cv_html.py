@@ -4,18 +4,19 @@ from jinja2.filters import FILTERS
 
 from util.text_util import split_into_sentences
 
-SECTIONTRANSLATE = {
+SECTIONTRANSLATE = { # also specifies order!
     "personal_data": ["Personal Information", "Persönliche Daten"],
     "education": ["Education", "Ausbildung", "Bildungsweg"],
     "work": ["Vocational Experience", "Experience", "Teaching Experience", "Berufserfahrung", "Lehrerfahrung"],
-    "volunteer": ["Honorary Offices and Academic Self Government", "Ehrenamt und akademische Selbstverwaltung", "Ehrenamt"],
+    "volunteer": ["Honorary Offices and Academic Self Government", "Ehrenamt und akademische Selbstverwaltung", "Ehrenamt", "Attended Conferences"  ],
     "skills": ["Programming Languages and Computer Skills", "Programmiersprachen und -kompetenzen"],
     "awards": ["Awards, Certificates and Stipends"],
+    "unknown": [None],
     "languages": ["Natural Languages", "Sprachen", "Natürliche Sprachen"],
     "interests": ["Hobbies and Interests"],
 }
 
-IGNORE_SECTIONS = ["personal_data"]
+IGNORE_SECTIONS = ["personal_data", "Basic Info"]
 
 
 ########################################################################################################################
