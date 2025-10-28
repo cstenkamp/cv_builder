@@ -76,9 +76,9 @@ class CVBuilder():
         if isinstance(what, (int, float)):
             what = str(what)
         if isinstance(what, str):
-            what = what.replace(":", " :").replace("{", " {")
+            what = what.replace(":", " :").replace("{", " {").replace(",", " ,")
             what = " ".join([transl.get(i, i) for i in what.split(" ")])
-            what = what.replace(" :", ":").replace(" {", "{")
+            what = what.replace(" :", ":").replace(" {", "{").replace(" ,", ",")
         elif isinstance(what, (list, set, tuple)):
             what = [self.wordwise_translate(i, tolang) for i in what]
         return what
@@ -144,7 +144,7 @@ class CVBuilder():
         result = self.handle_subdict(val, variant) if isinstance(val, dict) \
                 else self.wordwise_translate(val, variant["language"]) if isinstance(val, (str, int, float)) \
                 else self.handle_sublist(val, variant) if isinstance(val, (list, tuple, set)) \
-                else val
+                else self.wordwise_translate(val, variant["language"])
 
         # always add links...
         if isinstance(val, str):
