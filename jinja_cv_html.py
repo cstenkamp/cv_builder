@@ -46,6 +46,15 @@ def update(original_dict, future_dict = None, fn = None):
     elif isinstance(original_dict, str):
         return fn(original_dict)
 
+def remove_forbidtexts(txt):
+    # TODO gosh I should use nltk instead of this split_into_sentences holy shit
+    for forbid_txt in ["enclosed", "handed in"]:
+        if forbid_txt in txt: # remove the text, but keep the HTML-tags lol
+            txt = " ".join([i if not forbid_txt in i else "".join([j.group() for j in re.finditer(r"<(.*?)>", i) if j]) for i in split_into_sentences(txt)])
+            txt = txt.replace("www. ", "www.")
+            txt = txt.rstrip("*").rstrip()
+    return txt
+
 def inline_edit(txt):
     txt = txt.replace("\small ", "").replace("\small", "")
 
@@ -55,9 +64,7 @@ def inline_edit(txt):
     txt = markdown.markdown(txt).removeprefix("<p>").removesuffix("</p>")
 
     txt = txt.replace("<li>", "<li class=noinline>")
-    for forbid_txt in ["enclosed", "handed in"]:
-        if forbid_txt in txt: # remove the text, but keep the HTML-tags lol
-            txt = " ".join([i if not forbid_txt in i else "".join([j.group() for j in re.finditer(r"<(.*?)>", i) if j]) for i in split_into_sentences(txt)])
+    txt = remove_forbidtexts(txt)
     txt = re.sub(r'(^|\s)-(?=[^\W\d_])', r'\1&#8209;', txt) # ensures if a word starts with a hyphen it will be split WITH the word
 
     return txt

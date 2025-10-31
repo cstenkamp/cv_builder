@@ -1,3 +1,4 @@
+from components.cv_builder.jinja_cv_html import remove_forbidtexts, SECTIONTRANSLATE
 from cv_builder import CVBuilder
 import re, json, argparse, pathlib
 from typing import Any, Dict, List
@@ -5,12 +6,12 @@ from typing import Any, Dict, List
 # vibecoded: https://chatgpt.com/c/6904986d-3468-8321-8cb8-30073fe1e723
 
 def main(path):
-    cv = CVBuilder(path).build_variant(language="de", annotate_kind=False)
+    language = "en"
+    cv = CVBuilder(path).build_variant(language=language, length="lg", cat="nontech", annotate_kind=False)
     template_path = "/home/chris/Documents/projects/cstenkamp.de/components/cv_builder/static/cv_template.tex"
     out = "/home/chris/Documents/projects/cstenkamp.de/components/cv/cv_generated.tex"
-    site_base = "https://cstenkamp.de"
     template = pathlib.Path(template_path).read_text(encoding="utf-8")
-    tex = CV2LaTeX(cv, template, site_base=site_base.removeprefix("https://"), include_closing=True).render()
+    tex = CV2LaTeX(cv, template, site_base="https://cstenkamp.de", include_closing=True, language=language).render()
     pathlib.Path(out).write_text(tex, encoding="utf-8")
 
 
@@ -22,7 +23,7 @@ def main(path):
 #     ap.add_argument("--site", default="cstenkamp.de")
 #     ap.add_argument("--closing", action="store_true")
 #     ap.add_argument("--ae", action="store_true")  # switch title to "Curriculum Vitae"
-#     ap.add_argument("--style", default="casual", choices=["casual", "classic", "modern"])
+#     ap.add_argument("--style", default="casual", choices=["casual", "classic"])
 #     ap.add_argument("--social", action="store_true")
 #     args = ap.parse_args()
 #     data = load_data(data_path) if isinstance(data_path, str) and pathlib.Path(data_path).suffix else data_path
@@ -30,16 +31,17 @@ def main(path):
 #     tex = CV2LaTeX(data, template, site_base=site_base, include_closing=include_closing).render()
 #     pathlib.Path(out_path).write_text(tex, encoding="utf-8")
 
+
 class CV2LaTeX:
-    def __init__(self, data: Dict[str, Any], template_text: str, site_base: str = "cstenkamp.de",
-                 include_closing: bool = False, lang: str = "de", ae_title: bool = False,
-                 cv_style: str = "casual", strip_comments: bool = True, include_social: bool = False):
+    def __init__(self, data: Dict[str, Any], template_text: str, site_base: str, include_closing: bool = False, ae_style: bool = False,
+                 cv_style: str = "casual", strip_comments: bool = True, include_social: bool = False, language: str = "en", remove_enclosed: bool = True):
         self.data = data
+        self.language = language
+        self.ae_style = bool(ae_style)
+        self.remove_enclosed = bool(remove_enclosed)
         self.tpl = self._apply_style(template_text, cv_style)
-        self.site_base = site_base.strip().rstrip("/")
+        self.site_base = site_base.strip().rstrip("/").removeprefix("https://")
         self.include_closing = include_closing
-        self.lang = (lang or "de").lower()
-        self.ae_title = bool(ae_title)
         self.strip_comments = strip_comments
         self.include_social = include_social
 
@@ -57,6 +59,13 @@ class CV2LaTeX:
     # ---------------------------- template ops ----------------------------
 
     def _apply_style(self, tpl: str, style: str) -> str:
+        if self.language.lower() in ["en", "english"]:
+            if self.ae_style:
+                tpl = tpl.replace("BABELLANGUAGE", "USenglish")
+            else:
+                tpl = tpl.replace("BABELLANGUAGE", "UKenglish")
+        else:
+            tpl = tpl.replace("BABELLANGUAGE", "ngerman")
         return re.sub(r"(\\moderncvstyle\{)[^}]+(\})", r"\1%s\2" % style, tpl, count=1)
 
     def _sub_anchor(self, txt: str, name: str, payload: str) -> str:
@@ -73,18 +82,18 @@ class CV2LaTeX:
             m = re.match(r"\s*img\(([^)]+)\)\s*$", str(s or ""))
             return m.group(1) if m else str(s or "")
 
-        kv = {k.lower(): v for k, v in info.items()}
+        kv = {k.lower().removesuffix("_hidden"): v for k, v in info.items()}
         lines: List[str] = []
 
         firstname = kv.get("firstname", "")
         familyname = kv.get("familyname", "")
-        title_val = "Curriculum Vitae" if self.ae_title else kv.get("title", "Lebenslauf")
+        title_val = "" if self.ae_style else kv.get("title", "Curriculum Vitae")
 
         if firstname: lines.append("\\firstname{%s}" % self._esc(firstname))
         if familyname: lines.append("\\familyname{%s}" % self._esc(familyname))
         lines.append("\\title{%s}" % self._esc(title_val))
 
-        addr = kv.get("address_hidden")
+        addr = kv.get("address")
         if isinstance(addr, list) and len(addr) >= 2:
             lines.append("\\address{%s}{%s}" % (self._esc(addr[0]), self._esc(addr[1])))
 
@@ -118,35 +127,12 @@ class CV2LaTeX:
 
     def _render_sections(self, sections: Dict[str, Any]) -> str:
         chunks: List[str] = []
-        for raw_name, content in sections.items():
-            sec_name = self._section_label(raw_name)
+        for sec_name, content in sections.items():
             sec_head = "\\section{%s}" % self._esc(sec_name)
             body = self._render_section_body(sec_name, content)
             chunks.append("\n\n" + sec_head + "\n\n" + body)
         return "".join(chunks) + "\n"
 
-    def _section_label(self, name: str) -> str:
-        de = {
-            "personal information": "Pers\u00f6nliche Information",
-            "bildungsweg": "Ausbildung",
-            "education": "Ausbildung",
-            "berufserfahrung": "Berufserfahrung",
-            "programming languages and computer skills": "Programmiersprachen und -kompetenzen",
-            "nat\u00fcrliche sprachen": "Nat\u00fcrliche Sprachen",
-            "ehrenamt und akademische selbstverwaltung": "Ehrenamt und akademische Selbstverwaltung",
-        }
-        en = {
-            "personal information": "Personal Information",
-            "education": "Education",
-            "work experience": "Work Experience",
-            "programming languages and computer skills": "Programming Languages and Computer Skills",
-            "languages": "Languages",
-            "volunteering and academic self-governance": "Volunteering and Academic Service",
-        }
-        key = name.strip().lower()
-        if self.lang.startswith("en"):
-            return en.get(key, name)
-        return de.get(key, name)
 
     def _render_section_body(self, sec_name: str, content: Any) -> str:
         if isinstance(content, list) and content and isinstance(content[0], dict):
@@ -166,15 +152,14 @@ class CV2LaTeX:
         return "\n\n".join(lines) + "\n"
 
     def _cventry(self, sec_name: str, e: Dict[str, Any]) -> str:
-        time = self._normalize_time(self._fmt_text(e.get("time", "")))
+        time = self._fmt_text(e.get("time", ""))
         title = self._fmt_text(e.get("title", ""))
         employer = self._fmt_text(e.get("employer", ""))
         place = self._fmt_text(e.get("place", ""))
 
         # link title via hp_link (site_base applied)
-        hp = e.get("hp_link") or ""
-        if hp:
-            title = self._link_text(title, self._abs_url(hp))
+        if e.get("hp_link"):
+            title = self._link_text(title, self._abs_url(e["hp_link"]))
 
         # 5th arg: Note (edu) else website (italic)
         opt5 = ""
@@ -185,16 +170,36 @@ class CV2LaTeX:
             if website:
                 opt5 = "\\textit{%s}" % self._urlify(website)
 
-        body = self._fmt_text(e.get("optlong") or "")
+        body = e.get("optlong", "")
+        if self.remove_enclosed:
+            body = remove_forbidtexts(body)
+        body = self._fmt_text(body)
         return "\\cventry{%s}{%s}{%s}{%s}{%s}{%s}" % (time, title, employer, place, opt5, body)
 
     def _render_list_section(self, items: List[Any]) -> str:
         if not items: return ""
+        # MODE: doubleitem when the FIRST element is the marker
+        if isinstance(items[0], str) and re.search(r"design\s*:\s*doubleitem", items[0], re.I):
+            payload = items[1:]
+            rows, buf = [], []
+            for it in payload:
+                if isinstance(it, str) and it.strip():
+                    buf.append(self._fmt_inline(it.strip()))
+                    if len(buf) == 2:
+                        rows.append("    \\cvlistdoubleitem{%s}{%s}" % (buf[0], buf[1]))
+                        buf = []
+            if buf:
+                rows.append("    \\cvlistdoubleitem{%s}{}" % buf[0])
+            return "\n".join(rows)
+        # MODE: paragraphs (kept as-is)
         for i, it in enumerate(items):
             if isinstance(it, str) and re.search(r"design\s*:\s*paragraphs", it, re.I):
-                payload = items[i+1:]
+                payload = items[i + 1:]
                 return "\n".join("    \\cvitem{}{%s}" % self._fmt_text(str(x)) for x in payload)
-        return "\\begin{itemize}\n%s\n\\end{itemize}" % "\n".join("\t\\item %s" % self._fmt_text(str(x)) for x in items)
+        # default: itemize
+        return "\\begin{itemize}\n%s\n\\end{itemize}" % "\n".join(
+            "\t\\item %s" % self._fmt_text(str(x)) for x in items
+        )
 
     def _render_kv_section(self, sec_name: str, d: Dict[str, Any]) -> str:
         rows = []
@@ -215,12 +220,10 @@ class CV2LaTeX:
     # ---------------------------- helpers ----------------------------
 
     def _is_edu_section(self, sec_name: str) -> bool:
-        s = sec_name.strip().lower()
-        return ("bildung" in s) or ("ausbildung" in s) or ("education" in s)
-
-    def _normalize_time(self, s: str) -> str:
-        if self.lang.startswith("en"): return s.replace("aktuell", "present")
-        return s.replace("today", "aktuell").replace("present", "aktuell")
+        section_list = [k for k, v in SECTIONTRANSLATE.items() if sec_name.strip() in v]
+        if len(section_list) == 1 and section_list[0].lower() == "education":
+            return True
+        return False
 
     def _abs_url(self, url: str) -> str:
         t = str(url or "").strip()
@@ -251,10 +254,6 @@ class CV2LaTeX:
             return "\\httplink[%s]{%s}" % (txt, self._esc_url(url))
         return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", repl, s or "")
 
-    def _format_emphasis(self, t: str) -> str:
-        t = re.sub(r"\*\*([^\*\n]+)\*\*", lambda m: r"\bo{" + m.group(1) + "}", t)
-        t = re.sub(r"\*([^\*\n]+)\*", lambda m: r"\textit{" + m.group(1) + "}", t)
-        return t
 
     def _smart_quotes(self, t: str) -> str:
         out = []
@@ -271,15 +270,63 @@ class CV2LaTeX:
         return "".join(out)
 
     def _fmt_text(self, s: Any) -> str:
+        t = str(s or "").replace("\\n", "\n")
+        if re.search(r"(?ms)^[ \t]*\* [^\n]+\n[ \t]*\* [^\n]+", t):
+            res = self._render_bullet_blocks(t)
+        else:
+            res = self._fmt_inline(t)
+        res = re.sub(r'(?<!\\)\\n', r'\\\\', res)  # only literal \n, not real newlines
+        res = res.replace("\\\\small", "\\small")
+        res = re.sub(r'(?<!\})\n(?!\\item|\\end\{itemize\})', r'\\\\', res)
+        res = re.sub(r'(?:\\\\\s*)+(?=\\item\b)', '', res)
+        res = re.sub(r'(?:\\\\\s*)+(?=\\begin\{itemize\b)', '', res)
+        return res
+
+    def _fmt_inline(self, s: Any) -> str:
         t = str(s or "")
         t = self._md_to_href(t)
-        t = self._format_emphasis(t)
+        # bold first, then italics; allow multiline spans
+        t = re.sub(r"(?<!\*)\*\*(.+?)\*\*(?!\*)", r"\\bo{\1}", t, flags=re.S)
+        t = re.sub(r"(?<!\*)\*(.+?)\*(?!\*)", r"\\textit{\1}", t, flags=re.S)
+        # smart quotes
         t = self._smart_quotes(t)
         t = (t.replace("•", r"\textbullet{}")
              .replace("<br>", " \\\\ ")
              .replace("<br/>", " \\\\ ")
              .replace("<br />", " \\\\ "))
         return self._esc(t)
+
+    def _render_bullet_blocks(self, t: str) -> str:
+        pat = re.compile(r"(?ms)^([ \t]*\* [^\n]+(?:\n[ \t]*\* [^\n]+)+)")
+        out, i = [], 0
+        for m in pat.finditer(t):
+            pre = t[i:m.start()]
+            if pre:
+                pre_fmt = self._fmt_inline(pre)
+                pre_fmt = re.sub(r'(?:\s*\\\\\s*)+$', '', pre_fmt)  # drop trailing \\ before envs
+                out.append(pre_fmt.rstrip())
+            block = m.group(1).strip("\n")
+            lines = [re.sub(r"^[ \t]*\* ?", "", ln) for ln in block.split("\n")]
+            items = []
+            for ln in lines:
+                item_txt = self._fmt_inline(ln)
+                item_txt = re.sub(r'(?:\s*\\\\\s*)+$', '', item_txt)  # no \\ at item ends
+                items.append("\t\\item %s" % item_txt)
+            out.append("\n\\begin{itemize}\n\\setlength\\itemsep{0pt}\\setlength\\parsep{0pt}\\setlength\\parskip{0pt}\n%s\n\\end{itemize}" % "\n".join(items))
+            i = m.end()
+        tail = t[i:]
+        if tail:
+            tail_fmt = self._fmt_inline(tail)
+            tail_fmt = re.sub(r'(?:\s*\\\\\s*)+$', '', tail_fmt)
+            out.append(tail_fmt)
+        return self._clean_itemize_glue("".join(out))
+
+    def _clean_itemize_glue(self, t: str) -> str:
+        t = re.sub(r'\\par\s*\\\\\s*(\\begin\{itemize\})', r'\\par\n\1', t)
+        t = re.sub(r'(\\begin\{itemize\})\s*\\\\', r'\1\n', t)
+        t = re.sub(r'\\\\\s*(\\end\{itemize\})', r'\n\1', t)
+        t = re.sub(r'(\n?\s*\\item\b[^\n]*?)\s*\\\\(?=\s*(\\item|\\end\{itemize\}))', r'\1', t, flags=re.S)
+        return t
 
     def _esc(self, s: Any) -> str:
         t = str(s or "")
@@ -290,8 +337,8 @@ class CV2LaTeX:
         return t
 
     def _closing_block(self) -> str:
-        return ("\n\\vfill\n"
-                "\\closing{K\\\"oln, \\today\n"
+        return ("\n\n\n\n\\vfill\n"
+                "\\closing{"+self.data["Basic Info"]["city"]+", \\today\n"
                 "\\newline\n"
                 "\\includegraphics[height=30pt]{signature}\n"
                 "\\vspace{-30pt}\n"
