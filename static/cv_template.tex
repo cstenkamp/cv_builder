@@ -1,0 +1,56 @@
+% ModernCV base template with two anchors:
+%  - %%BASIC_INFO%%   (goes into preamble, sets name, title, photo, etc.)
+%  - %%SECTIONS%%     (full body content)
+
+\PassOptionsToPackage{unicode,final}{hyperref}
+\documentclass[11pt,a4paper]{moderncv}
+\moderncvstyle{casual}
+\moderncvcolor{black}
+\usepackage[utf8]{inputenc}
+\usepackage[scale=0.8, top=1.6cm, bottom=2.8cm]{geometry}
+\usepackage{setspace}
+\usepackage[ngerman]{babel}
+
+\usepackage{ifthen}
+\usepackage[hidelinks]{hyperref}
+
+% helpers
+\renewcommand*{\httplink}[2][]{\ifthenelse{\equal{#1}{}}{\href{#2}{#2}}{\href{#2}{#1}}}
+\newcommand{\bo}{\textbf}
+\newcommand{\ts}{\textsuperscript}
+\let\oldsubsec\subsection
+\renewcommand{\subsection}[1]{\vspace{3pt} \oldsubsec{\Large #1}}
+
+% optional: wire-in social helpers if you want to fill them later
+\newcommand{\githubsocial}[1]{}
+\newcommand{\linkedinsocial}[1]{}
+
+%% BASIC INFO (injected)
+%% ----------------------------------------------------------------
+%% The renderer writes commands like \firstname{...}, \familyname{...}, \title{...}, \address{...}{...}, \email{...}, \mobile{...}, \homepage{...}, \photo[...] {...}
+%% You can add your own lines here if you want a static preface.
+%% ----------------------------------------------------------------
+%%BASIC_INFO%%
+
+\begin{document}
+\setlength{\hintscolumnwidth}{69pt}
+
+\maketitle
+\vspace{-40pt}
+
+%% SECTIONS (injected)
+%% ----------------------------------------------------------------
+%% The renderer writes \section{...} and then \cventry / \cvitem* rows.
+%% ----------------------------------------------------------------
+%%SECTIONS%%
+
+% Optional closing block (disabled by default)
+% \vfill
+% \closing{Köln, \today
+% \newline
+% \includegraphics[height=30pt]{signature}
+% \vspace{-30pt}
+% }
+% \makeletterclosing
+
+\end{document}
