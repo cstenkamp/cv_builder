@@ -5,7 +5,7 @@ from jinja2.filters import FILTERS
 from util.text_util import split_into_sentences
 
 SECTIONTRANSLATE = { # also specifies order!
-    "personal_data": ["Personal Information", "Persönliche Daten"],
+    "personal_data": ["Personal Information", "Persönliche Daten", "personal_data"],
     "education": ["Education", "Ausbildung", "Bildungsweg"],
     "work": ["Vocational Experience", "Experience", "Teaching Experience", "Berufserfahrung", "Lehrerfahrung"],
     "volunteer": ["Honorary Offices and Academic Self Government", "Ehrenamt und akademische Selbstverwaltung", "Ehrenamt", "Attended Conferences"  ],
@@ -58,5 +58,7 @@ def inline_edit(txt):
     for forbid_txt in ["enclosed", "handed in"]:
         if forbid_txt in txt: # remove the text, but keep the HTML-tags lol
             txt = " ".join([i if not forbid_txt in i else "".join([j.group() for j in re.finditer(r"<(.*?)>", i) if j]) for i in split_into_sentences(txt)])
+    txt = re.sub(r'(^|\s)-(?=[^\W\d_])', r'\1&#8209;', txt) # ensures if a word starts with a hyphen it will be split WITH the word
+
     return txt
 
