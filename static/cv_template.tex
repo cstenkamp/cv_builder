@@ -6,11 +6,11 @@
 \documentclass[11pt,a4paper]{moderncv}
 \moderncvstyle{casual}
 \moderncvcolor{black}
+
 \usepackage[utf8]{inputenc}
 \usepackage[scale=0.8, top=1.6cm, bottom=2.8cm]{geometry}
 \usepackage{setspace}
 \usepackage[ngerman]{babel}
-
 \usepackage{ifthen}
 \usepackage[hidelinks]{hyperref}
 
@@ -20,8 +20,6 @@
 \newcommand{\ts}{\textsuperscript}
 \let\oldsubsec\subsection
 \renewcommand{\subsection}[1]{\vspace{3pt} \oldsubsec{\Large #1}}
-
-% optional: wire-in social helpers if you want to fill them later
 \newcommand{\githubsocial}[1]{}
 \newcommand{\linkedinsocial}[1]{}
 
@@ -43,14 +41,5 @@
 %% The renderer writes \section{...} and then \cventry / \cvitem* rows.
 %% ----------------------------------------------------------------
 %%SECTIONS%%
-
-% Optional closing block (disabled by default)
-% \vfill
-% \closing{Köln, \today
-% \newline
-% \includegraphics[height=30pt]{signature}
-% \vspace{-30pt}
-% }
-% \makeletterclosing
 
 \end{document}

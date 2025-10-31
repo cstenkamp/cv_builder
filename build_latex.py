@@ -2,6 +2,8 @@ from cv_builder import CVBuilder
 import re, json, argparse, pathlib
 from typing import Any, Dict, List
 
+# vibecoded: https://chatgpt.com/c/6904986d-3468-8321-8cb8-30073fe1e723
+
 def main(path):
     cv = CVBuilder(path).build_variant(language="de", annotate_kind=False)
     template_path = "/home/chris/Documents/projects/cstenkamp.de/components/cv_builder/static/cv_template.tex"
