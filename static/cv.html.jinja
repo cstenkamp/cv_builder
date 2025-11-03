@@ -220,7 +220,6 @@
                                     {% endif %}
                                 {% endfor %}
                                 {% set design = design.design.strip() %}
-
                                 {% if design == "default" %}
                                     <div class="listitems dottedlinks"><ul>
                                     {% for val in section.content.lst %}
@@ -238,6 +237,27 @@
                                             <p style="margin-bottom:5px">{{ val }}</p>
                                         {% endif %}
                                     {% endfor %}
+                                {% elif design == "doubleitem" %}
+                                    {# collect non-marker values #}
+                                    {% set vals = [] %}
+                                    {% for v in section.content.lst %}
+                                        {% if not v.startswith('<!--design:') %}
+                                            {% set _ = vals.append(v) %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    <div class="doubleitems">
+                                        <table class="doubleitems-table">
+                                            {% for i in range(0, vals|length, 2) %}
+                                                <tr>
+                                                    <td class="leftitem">{{ vals[i] | safe }}</td>
+                                                    <td class="rightitem">
+                                                        {% if i + 1 < vals|length %}{{ vals[i+1] | safe }}{% else %}&nbsp;{% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </table>
+                                    </div>
 
                                 {% endif %}
 

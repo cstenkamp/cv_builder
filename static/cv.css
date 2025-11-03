@@ -827,3 +827,52 @@ footer.printfooter {
     text-decoration: underline;
     text-decoration-style: solid;
 }
+
+
+/* --- doubleitems: larger text, circle bullets, dotted links --- */
+.doubleitems-table{
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0 .3rem;
+}
+
+.doubleitems-table td{
+  width: 50%;
+  vertical-align: top;
+  padding-left: 1.1rem;            /* room for bullet */
+  position: relative;
+  overflow-wrap: anywhere;          /* wrap long words/URLs */
+  line-height: 1.35;
+  font-size: 15px;                  /* larger font like other lists */
+}
+
+/* hollow circle “like the other list” */
+.doubleitems-table td::before{
+  content: "\25E6";                 /* WHITE BULLET (◦) */
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  line-height: 1.35;
+}
+
+/* dotted underline for links, consistent with .dottedlinks a */
+.doubleitems a{
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.doubleitems a:hover{
+  text-decoration: underline;
+  text-decoration-style: solid;
+}
+
+/* stack columns on narrow screens */
+@media (max-width:600px){
+  .doubleitems-table tr{ display: block; }
+  .doubleitems-table td{
+    display: block;
+    width: 100%;
+    padding-left: 1.1rem;
+  }
+  .doubleitems-table td + td{ margin-top: .15rem; }
+}
