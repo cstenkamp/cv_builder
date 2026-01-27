@@ -6,8 +6,8 @@ from typing import Any, Dict, List
 # vibecoded: https://chatgpt.com/c/6904986d-3468-8321-8cb8-30073fe1e723
 
 def main(path):
-    language = "en"
-    cv = CVBuilder(path).build_variant(language=language, length="lg", cat="nontech", annotate_kind=False)
+    language = "de"
+    cv = CVBuilder(path).build_variant(language=language, length="sh", cat="tech", annotate_kind=False)
     template_path = "/home/chris/Documents/projects/cstenkamp.de/components/cv_builder/static/cv_template.tex"
     out = "/home/chris/Documents/projects/cstenkamp.de/components/cv/cv_generated.tex"
     template = pathlib.Path(template_path).read_text(encoding="utf-8")
