@@ -1,3 +1,7 @@
++++
+tags = []
+categories = []
++++
 # CV-Generator
 
 A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported to Latex and thus PDF (upcoming) as well as HTML. This repo can run as a separate container and hosts the HTML in Flask (see https://cstenkamp.de/getcv/cv), which can even be embedded into Hugo (see my [blogpost](https://cstenkamp.de/tech_posts/hugo_dynamic_content/)). It is customizable and allows currently for multiple languages with translations and content that's only supposed to be in one language - future work will extend this to also be able to customize text length or categories of content - stay tuned for that. 

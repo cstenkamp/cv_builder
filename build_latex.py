@@ -13,6 +13,7 @@ def main(path):
     template = pathlib.Path(template_path).read_text(encoding="utf-8")
     tex = CV2LaTeX(cv, template, site_base="https://cstenkamp.de", include_closing=True, language=language).render()
     pathlib.Path(out).write_text(tex, encoding="utf-8")
+    print(f"Wrote CV Tex-File to {out}")
 
 
 # def main():
