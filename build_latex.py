@@ -103,7 +103,7 @@ class CV2LaTeX:
         if kv.get("homepage"): lines.append("\\homepage{%s}" % self._esc(self._homepage_text(kv["homepage"])))
         if kv.get("photo"):
             fn = img_name(kv["photo"])
-            if fn: lines.append("\\photo[85pt][0pt]{%s}" % fn)
+            if fn: lines.append("\\photo[120pt][0pt]{%s}" % fn)
 
         extras = []
         if kv.get("github_user"):  extras.append("\\githubsocial{%s}" % self._esc(kv["github_user"]))
