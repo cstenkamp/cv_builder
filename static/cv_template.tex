@@ -8,7 +8,7 @@
 \moderncvcolor{black}
 
 \usepackage[utf8]{inputenc}
-\usepackage[scale=0.8, top=1.6cm, bottom=2.8cm]{geometry}
+\usepackage[hscale=0.8, top=1.6cm, bottom=2.8cm, footskip=55pt]{geometry}
 \usepackage{setspace}
 \usepackage[BABELLANGUAGE]{babel}
 \usepackage{ifthen}
@@ -23,6 +23,10 @@
 \newcommand{\githubsocial}[1]{}
 \newcommand{\linkedinsocial}[1]{}
 
+% Extend left labels into the margin without changing columns or section rules.
+\let\oldhintstyle\hintstyle
+\renewcommand*{\hintstyle}[1]{\makebox[\hintscolumnwidth][r]{\oldhintstyle{#1}}}
+
 %% BASIC INFO (injected)
 %% ----------------------------------------------------------------
 %% The renderer writes commands like \firstname{...}, \familyname{...}, \title{...}, \address{...}{...}, \email{...}, \mobile{...}, \homepage{...}, \photo[...] {...}
@@ -32,6 +36,7 @@
 
 \begin{document}
 \setlength{\hintscolumnwidth}{69pt}
+\setstretch{0.97}
 
 \maketitle
 \vspace{-40pt}

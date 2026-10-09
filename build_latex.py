@@ -331,8 +331,8 @@ class CV2LaTeX:
 
     def _esc(self, s: Any) -> str:
         t = str(s or "")
-        if "\\" in t:  # allow LaTeX macros to pass
-            return t
+        if "\\" in t:  # allow LaTeX macros to pass, but still escape special chars that aren't escaped yet
+            return re.sub(r"(?<!\\)([%&#])", r"\\\1", t)
         t = re.sub(r"([%&#_$\{\}])", r"\\\1", t)
         t = t.replace("^", "\\textasciicircum{}").replace("~", "\\textasciitilde{}")
         return t

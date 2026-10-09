@@ -165,19 +165,35 @@ class CVBuilder():
         used_postfixes = ["_"+"_".join(i) for i in self._get_used_postfixes(variant)]
         # remove all those keys that indicate undemanded variants (eg. title_de_short) - for that
         # we take the longest postfix-combination that matches, and then remove all others of the same name
-        varianted_keys = variant_basekeys = {k for k in di.keys() if any(i in k for i in used_postfixes)}
-        for pf in self.all_postfixes():
-            variant_basekeys = {i.removesuffix(f"_{pf}")for i in variant_basekeys}
-        basekeys2 = {i for i in variant_basekeys}
-        used_variants = {}
-        for pf in used_postfixes:
+        all_postfixes = self.all_postfixes()
+
+        def variant_basekey(key):
+            """Strip all trailing variant postfixes, regardless of their order."""
+            basekey = key
+            while True:
+                for postfix in all_postfixes:
+                    suffix = f"_{postfix}"
+                    if basekey.endswith(suffix):
+                        basekey = basekey.removesuffix(suffix)
+                        break
+                else:
+                    return basekey
+
+        varianted_keys = {k for k in di if variant_basekey(k) != k}  # all keys carrying any variant-postfix (eg. title_en, optlong_de_sh)
+        remaining_basekeys = {variant_basekey(k) for k in varianted_keys}  # basekeys for which no matching variant was found yet
+        used_variants = {}  # varianted key -> basekey it replaces
+        for pf in used_postfixes:  # from most to least specific
             for var in varianted_keys:
-                if var.endswith(pf) and var.removesuffix(pf) in variant_basekeys:  # the first found one is the longest -> ignore all others
-                    # print(f"{var.removesuffix(pf)} -> {var}")
-                    variant_basekeys.remove(var.removesuffix(pf))
-                    used_variants[var] = var.removesuffix(pf)
-        # di = {used_variants.get(k, k): v for k, v in di.items() if (not any(k.endswith("_"+i) for i in self.all_postfixes()) or k in used_variants) and v}
-        di = {used_variants.get(k, k): v for k, v in di.items() if ((not any(k.endswith("_"+i) for i in self.all_postfixes()) and k not in basekeys2) or k in used_variants) and v}
+                base = var.removesuffix(pf)
+                # the postfix must cover the complete variant-part of the key (so "_sh" doesn't match "optlong_de_sh")
+                if var.endswith(pf) and base == variant_basekey(var) and base in remaining_basekeys:
+                    remaining_basekeys.remove(base)
+                    used_variants[var] = base
+        replaced_basekeys = set(used_variants.values())
+        # keep: matching variants (renamed to their basekey) and plain keys whose basekey was not replaced by a variant.
+        # drop: non-matching variants, and plain keys for which a matching variant exists.
+        di = {used_variants.get(k, k): v for k, v in di.items()
+              if (k in used_variants or (k not in varianted_keys and k not in replaced_basekeys)) and v}
 
         # now handle the special key "show_on"
         if "show_on" in di:

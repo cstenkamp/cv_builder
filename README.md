@@ -47,6 +47,12 @@ A tool to convert allow to write a Curriculum Vitae in YAML, to then be exported
   * `{doubleitem}` is to have two children for an entry (like the `cvlistedoubleitem` in moderncv) 
   * `{yearlist}` is for a year-list (see `Awards` in sample_cv.yaml), makes it look similar to the main sections
   * `{paragraphs}` designs a list not as bullet points, but as individual paragraphs.
+  * `{dict}` is for a plain key-value mapping (label on the left, text on the right; `\cvitem{key}{value}` in Latex, a table in HTML). The section must be a YAML mapping, not a list of one-key mappings:
+    ```
+    Technik & Tools [de, sh] {dict}:
+      Hardware: "\\small ESP32/Arduino, ..."
+      Licht & CAD: "\\small DMX/Art-Net, ..."
+    ```
 
 ## Syntax
 
