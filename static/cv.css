@@ -272,6 +272,16 @@ div.unit {
     /* color: #757575; */
     font-style: italic;
 }
+
+/* Links inside job/teaching optlong (ul.highlights) — same dotted underline as .dottedlinks */
+ul.highlights a {
+    text-decoration: underline !important;
+    text-decoration-style: dotted !important;
+}
+ul.highlights a:hover {
+    text-decoration: underline !important;
+    text-decoration-style: solid !important;
+}
 ul {
     margin-top: 0 !important;
 }

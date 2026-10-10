@@ -62,18 +62,44 @@
                     elems[i].innerHTML = formatDate(elems[i].dateTime);
                 }
             }
+
+            function sizeCvPhoto(root) {
+                root = root || document;
+                var img = root.querySelector("#cv-photo");
+                if (!img) return;
+                if (window.matchMedia("(min-width: 501px)").matches) {
+                    img.setAttribute("style", "width: 200px;");
+                } else {
+                    img.setAttribute("style", "max-width: 200px;");
+                }
+            }
+            window.addEventListener("resize", function () { sizeCvPhoto(); });
         </script>
 
     </head>
 
-    <body onload="formatdates();">
+    <body onload="formatdates(); sizeCvPhoto();">
 {#        <div id="backlink" class="hideonprint">#}
 {#            <a href="{{ homepage_link }}">back to {{ homepage }}</a>#}
 {#        </div>#}
 
+        {# Inline so it applies even when CV_CSS_URL points at a stale deployed cv.css
+           (docker prod.env → https://cstenkamp.de/getcv/cv.css). Body styles are
+           copied into the Hugo shadow DOM; <head> link stylesheets may not be. #}
+        <style>
+            ul.highlights a {
+                text-decoration: underline !important;
+                text-decoration-style: dotted !important;
+            }
+            ul.highlights a:hover {
+                text-decoration: underline !important;
+                text-decoration-style: solid !important;
+            }
+        </style>
+
         <div id="resume">
                 <header id="header">
-                    <img src="{{ image_link }}" alt="{{ firstname }} {{ familyname }}" style="max-width: 200px;"/>
+                    <img id="cv-photo" src="{{ image_link }}" alt="{{ firstname }} {{ familyname }}" style="max-width: 200px;"/>
                     <div class="middle">
                         <h1 class="name">{{ firstname }} {{ familyname }}</h1>
                         <h2 class="label">{{ label }}</h2>
