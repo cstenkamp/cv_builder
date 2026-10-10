@@ -66,7 +66,8 @@ def prepare_contentdict(cv_content, get_image_url, hugo_public_url, sectiontrans
     # now we paste the unknown sections at the unknown position
     unkown_pos = list(sectiontranslate.keys()).index("unknown")
     after_unknown_secs = [elem for i, elem in enumerate(list(sectiontranslate.keys())) if i > unkown_pos]
-    unknown_ind = next(i for i, x in enumerate(cnt["sections"]) if x["sectionkey"] in after_unknown_secs)
+    # if no section after the "unknown"-slot exists in this variant, append the unknown ones at the end instead of crashing
+    unknown_ind = next((i for i, x in enumerate(cnt["sections"]) if x["sectionkey"] in after_unknown_secs), len(cnt["sections"]))
     for sec in reversed(unknown_sections):
         cnt["sections"].insert(unknown_ind, sec)
     cnt = update(cnt, fn=inline_edit)
@@ -83,7 +84,7 @@ def get_image():
         if len(fname) < 1:
             return ""
         fname = join(IMG_ROOT, fname[0])
-    return send_file(fname, mimetype='image/gif')
+    return send_file(fname)  # mimetype is guessed from the file extension (jpg/png/gif/...)
 
 @app.route('/cv.css')
 def cv_style():

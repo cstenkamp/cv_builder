@@ -53,6 +53,7 @@ def remove_forbidtexts(txt):
             txt = " ".join([i if not forbid_txt in i else "".join([j.group() for j in re.finditer(r"<(.*?)>", i) if j]) for i in split_into_sentences(txt)])
             txt = txt.replace("www. ", "www.")
             txt = txt.rstrip("*").rstrip()
+            txt = re.sub(r"<(em|strong|i|b)>\s*</\1>", "", txt).rstrip()  # tags left over from a removed sentence (eg. "<em> </em>")
     return txt
 
 def inline_edit(txt):
